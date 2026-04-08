@@ -1,0 +1,171 @@
+[
+  {
+    "id": "rice",
+    "name": "大米（粳米，标一）",
+    "category": "谷物",
+    "nutrition_per_100g": {
+      "kcal": 343,
+      "carbohydrate_g": 77.4,
+      "protein_g": 7.7,
+      "fat_g": 0.6,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 97
+    },
+    "features": ["富含B族维生素", "主食核心来源"],
+    "text_for_embedding": "大米（粳米，标一）是一种谷物。每100克含343千卡热量，77.4克碳水化合物，7.7克蛋白质，0.6克脂肪，0毫克维生素C，97毫克钾。特点是富含B族维生素，主食核心来源。"
+  },
+  {
+    "id": "wheat_flour",
+    "name": "小麦粉（标准粉）",
+    "nutrition_per_100g": {
+      "kcal": 362,
+      "carbohydrate_g": 70.9,
+      "protein_g": 15.7,
+      "fat_g": 2.5,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 195
+    },
+    "features": ["膳食纤维、铁含量高于精白面"],
+    "text_for_embedding": "小麦粉（标准粉）是一种谷物。每100克含362千卡热量，70.9克碳水化合物，15.7克蛋白质，2.5克脂肪，0毫克维生素C，195毫克钾。特点是膳食纤维、铁含量高于精白面。"
+  },
+  {
+    "id": "millet",
+    "name": "小米",
+    "nutrition_per_100g": {
+      "kcal": 358,
+      "carbohydrate_g": 75.1,
+      "protein_g": 9.0,
+      "fat_g": 3.1,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 284
+    },
+    "features": ["色氨酸丰富", "助眠", "B族维生素含量高"],
+    "text_for_embedding": "小米是一种谷物。每100克含358千卡热量，75.1克碳水化合物，9.0克蛋白质，3.1克脂肪，0毫克维生素C，284毫克钾。特点是色氨酸丰富，助眠，B族维生素含量高。"
+  },
+  {
+    "id": "corn",
+    "name": "玉米（黄，干）",
+    "nutrition_per_100g": {
+      "kcal": 348,
+      "carbohydrate_g": 74.7,
+      "protein_g": 8.8,
+      "fat_g": 3.8,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 270
+    },
+    "features": ["含叶黄素、玉米黄质", "护眼"],
+    "text_for_embedding": "玉米（黄，干）是一种谷物。每100克含348千卡热量，74.7克碳水化合物，8.8克蛋白质，3.8克脂肪，0毫克维生素C，270毫克钾。特点是含叶黄素、玉米黄质，护眼。"
+  },
+  {
+    "id": "oatmeal",
+    "name": "燕麦片",
+    "nutrition_per_100g": {
+      "kcal": 377,
+      "carbohydrate_g": 66.9,
+      "protein_g": 15.0,
+      "fat_g": 6.7,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 214
+    },
+    "features": ["β-葡聚糖丰富", "控血脂", "控糖"],
+    "text_for_embedding": "燕麦片是一种谷物。每100克含377千卡热量，66.9克碳水化合物，15.0克蛋白质，6.7克脂肪，0毫克维生素C，214毫克钾。特点是β-葡聚糖丰富，控血脂、控糖。"
+  },
+  {
+    "id": "sorghum",
+    "name": "高粱米",
+    "nutrition_per_100g": {
+      "kcal": 351,
+      "carbohydrate_g": 74.7,
+      "protein_g": 10.4,
+      "fat_g": 3.1,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 281
+    },
+    "features": ["膳食纤维丰富", "饱腹感强"],
+    "text_for_embedding": "高粱米是一种谷物。每100克含351千卡热量，74.7克碳水化合物，10.4克蛋白质，3.1克脂肪，0毫克维生素C，281毫克钾。特点是膳食纤维丰富，饱腹感强。"
+  },
+  {
+    "id": "coix_seed",
+    "name": "薏米",
+    "nutrition_per_100g": {
+      "kcal": 357,
+      "carbohydrate_g": 71.1,
+      "protein_g": 12.9,
+      "fat_g": 3.3,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 238
+    },
+    "features": ["含薏苡仁酯", "利水渗湿"],
+    "text_for_embedding": "薏米是一种谷物。每100克含357千卡热量，71.1克碳水化合物，12.9克蛋白质，3.3克脂肪，0毫克维生素C，238毫克钾。特点是含薏苡仁酯，利水渗湿。"
+  },
+  {
+    "id": "buckwheat",
+    "name": "荞麦（带皮）",
+    "nutrition_per_100g": {
+      "kcal": 343,
+      "carbohydrate_g": 71.5,
+      "protein_g": 13.3,
+      "fat_g": 3.4,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 401
+    },
+    "features": ["芦丁含量高", "辅助调节血压"],
+    "text_for_embedding": "荞麦（带皮）是一种谷物。每100克含343千卡热量，71.5克碳水化合物，13.3克蛋白质，3.4克脂肪，0毫克维生素C，401毫克钾。特点是芦丁含量高，辅助调节血压。"
+  },
+  {
+    "id": "brown_rice",
+    "name": "糙米",
+    "nutrition_per_100g": {
+      "kcal": 348,
+      "carbohydrate_g": 75.5,
+      "protein_g": 7.7,
+      "fat_g": 0.9,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 256
+    },
+    "features": ["保留胚芽和麸皮", "B族维生素、膳食纤维丰富"],
+    "text_for_embedding": "糙米是一种谷物。每100克含348千卡热量，75.5克碳水化合物，7.7克蛋白质，0.9克脂肪，0毫克维生素C，256毫克钾。特点是保留胚芽和麸皮，B族维生素、膳食纤维丰富。"
+  },
+  {
+    "id": "cornmeal",
+    "name": "玉米面（黄）",
+    "nutrition_per_100g": {
+      "kcal": 350,
+      "carbohydrate_g": 78.4,
+      "protein_g": 8.5,
+      "fat_g": 1.5,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 249
+    },
+    "features": ["易吸收", "适合做主食、辅食"],
+    "text_for_embedding": "玉米面（黄）是一种谷物。每100克含350千卡热量，78.4克碳水化合物，8.5克蛋白质，1.5克脂肪，0毫克维生素C，249毫克钾。特点是易吸收，适合做主食、辅食。"
+  },
+  {
+    "id": "oat_flour",
+    "name": "莜麦面",
+    "nutrition_per_100g": {
+      "kcal": 391,
+      "carbohydrate_g": 67.7,
+      "protein_g": 13.7,
+      "fat_g": 8.6,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 547
+    },
+    "features": ["蛋白质、钾含量高", "升糖指数低"],
+    "text_for_embedding": "莜麦面是一种谷物。每100克含391千卡热量，67.7克碳水化合物，13.7克蛋白质，8.6克脂肪，0毫克维生素C，547毫克钾。特点是蛋白质、钾含量高，升糖指数低。"
+  },
+  {
+    "id": "black_rice",
+    "name": "黑米",
+    "nutrition_per_100g": {
+      "kcal": 333,
+      "carbohydrate_g": 70.4,
+      "protein_g": 9.4,
+      "fat_g": 2.5,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 256
+    },
+    "features": ["花青素丰富", "抗氧化"],
+    "text_for_embedding": "黑米是一种谷物。每100克含333千卡热量，70.4克碳水化合物，9.4克蛋白质，2.5克脂肪，0毫克维生素C，256毫克钾。特点是花青素丰富，抗氧化。"
+  }
+]

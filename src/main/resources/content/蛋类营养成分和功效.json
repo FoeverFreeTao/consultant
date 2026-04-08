@@ -1,0 +1,182 @@
+[
+  {
+    "id": "egg_whole",
+    "name": "鸡蛋（全蛋，生）",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 143,
+      "carbohydrate_g": 2.8,
+      "protein_g": 12.6,
+      "fat_g": 9.4,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 153
+    },
+    "features": ["含卵磷脂", "健脑", "生物价极高的优质蛋白"],
+    "text_for_embedding": "鸡蛋（全蛋，生）是一种蛋类及蛋制品。每100克含143千卡热量，2.8克碳水化合物，12.6克蛋白质，9.4克脂肪，0毫克维生素C，153毫克钾。特点是含卵磷脂，健脑，生物价极高的优质蛋白。"
+  },
+  {
+    "id": "egg_white",
+    "name": "鸡蛋清",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 52,
+      "carbohydrate_g": 1.6,
+      "protein_g": 11.6,
+      "fat_g": 0.1,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 133
+    },
+    "features": ["几乎0脂肪", "纯蛋白来源", "减脂首选"],
+    "text_for_embedding": "鸡蛋清是一种蛋类及蛋制品。每100克含52千卡热量，1.6克碳水化合物，11.6克蛋白质，0.1克脂肪，0毫克维生素C，133毫克钾。特点是几乎0脂肪，纯蛋白来源，减脂首选。"
+  },
+  {
+    "id": "egg_yolk",
+    "name": "鸡蛋黄",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 328,
+      "carbohydrate_g": 1.5,
+      "protein_g": 15.2,
+      "fat_g": 26.5,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 113
+    },
+    "features": ["脂溶性维生素（A/D/E/K）宝库", "含铁丰富"],
+    "text_for_embedding": "鸡蛋黄是一种蛋类及蛋制品。每100克含328千卡热量，1.5克碳水化合物，15.2克蛋白质，26.5克脂肪，0毫克维生素C，113毫克钾。特点是脂溶性维生素（A/D/E/K）宝库，含铁丰富。"
+  },
+  {
+    "id": "duck_egg",
+    "name": "鸭蛋",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 180,
+      "carbohydrate_g": 3.1,
+      "protein_g": 12.6,
+      "fat_g": 13.0,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 191
+    },
+    "features": ["钙、铁含量高于鸡蛋", "滋阴清肺"],
+    "text_for_embedding": "鸭蛋是一种蛋类及蛋制品。每100克含180千卡热量，3.1克碳水化合物，12.6克蛋白质，13.0克脂肪，0毫克维生素C，191毫克钾。特点是钙、铁含量高于鸡蛋，滋阴清肺。"
+  },
+  {
+    "id": "salted_duck_egg",
+    "name": "咸鸭蛋",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 190,
+      "carbohydrate_g": 2.5,
+      "protein_g": 12.7,
+      "fat_g": 12.1,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 206
+    },
+    "features": ["钠含量较高", "风味独特", "不宜多食"],
+    "text_for_embedding": "咸鸭蛋是一种蛋类及蛋制品。每100克含190千卡热量，2.5克碳水化合物，12.7克蛋白质，12.1克脂肪，0毫克维生素C，206毫克钾。特点是钠含量较高，风味独特，不宜多食。"
+  },
+  {
+    "id": "century_egg",
+    "name": "皮蛋（松花蛋）",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 171,
+      "carbohydrate_g": 2.8,
+      "protein_g": 14.2,
+      "fat_g": 10.7,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 152
+    },
+    "features": ["矿物质丰富", "含铅量需注意", "口感Q弹"],
+    "text_for_embedding": "皮蛋（松花蛋）是一种蛋类及蛋制品。每100克含171千卡热量，2.8克碳水化合物，14.2克蛋白质，10.7克脂肪，0毫克维生素C，152毫克钾。特点是矿物质丰富，含铅量需注意，口感Q弹。"
+  },
+  {
+    "id": "quail_egg",
+    "name": "鹌鹑蛋",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 160,
+      "carbohydrate_g": 2.2,
+      "protein_g": 13.1,
+      "fat_g": 11.0,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 138
+    },
+    "features": ["维生素B族含量高", "适合脑力劳动者"],
+    "text_for_embedding": "鹌鹑蛋是一种蛋类及蛋制品。每100克含160千卡热量，2.2克碳水化合物，13.1克蛋白质，11.0克脂肪，0毫克维生素C，138毫克钾。特点是维生素B族含量高，适合脑力劳动者。"
+  },
+  {
+    "id": "spiced_egg",
+    "name": "卤蛋（五香）",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 140,
+      "carbohydrate_g": 3.0,
+      "protein_g": 12.0,
+      "fat_g": 8.0,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 140
+    },
+    "features": ["加工制品", "钠含量较高", "营养略有流失"],
+    "text_for_embedding": "卤蛋（五香）是一种蛋类及蛋制品。每100克含140千卡热量，3.0克碳水化合物，12.0克蛋白质，8.0克脂肪，0毫克维生素C，140毫克钾。特点是加工制品，钠含量较高，营养略有流失。"
+  },
+  {
+    "id": "tea_egg",
+    "name": "茶蛋",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 150,
+      "carbohydrate_g": 2.5,
+      "protein_g": 12.5,
+      "fat_g": 9.0,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 150
+    },
+    "features": ["茶叶风味", "保留大部分原生营养"],
+    "text_for_embedding": "茶蛋是一种蛋类及蛋制品。每100克含150千卡热量，2.5克碳水化合物，12.5克蛋白质，9.0克脂肪，0毫克维生素C，150毫克钾。特点是茶叶风味，保留大部分原生营养。"
+  },
+  {
+    "id": "egg_tofu",
+    "name": "鸡蛋干",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 250,
+      "carbohydrate_g": 5.0,
+      "protein_g": 20.0,
+      "fat_g": 15.0,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 100
+    },
+    "features": ["浓缩蛋白", "口感Q弹", "适合佐餐"],
+    "text_for_embedding": "鸡蛋干是一种蛋类及蛋制品。每100克含250千卡热量，5.0克碳水化合物，20.0克蛋白质，15.0克脂肪，0毫克维生素C，100毫克钾。特点是浓缩蛋白，口感Q弹，适合佐餐。"
+  },
+  {
+    "id": "egg_yolk_pastry",
+    "name": "蛋黄酥（馅料）",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 450,
+      "carbohydrate_g": 50.0,
+      "protein_g": 5.0,
+      "fat_g": 25.0,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 100
+    },
+    "features": ["高糖高脂", "能量炸弹", "节日特色零食"],
+    "text_for_embedding": "蛋黄酥（馅料）是一种蛋类及蛋制品。每100克含450千卡热量，50.0克碳水化合物，5.0克蛋白质，25.0克脂肪，0毫克维生素C，100毫克钾。特点是高糖高脂，能量炸弹，节日特色零食。"
+  },
+  {
+    "id": "egg_drop_soup",
+    "name": "蛋花汤（浓缩）",
+    "category": "蛋类及蛋制品",
+    "nutrition_per_100g": {
+      "kcal": 60,
+      "carbohydrate_g": 3.0,
+      "protein_g": 5.0,
+      "fat_g": 3.0,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 80
+    },
+    "features": ["易消化", "快速补充蛋白", "清淡养胃"],
+    "text_for_embedding": "蛋花汤（浓缩）是一种蛋类及蛋制品。每100克含60千卡热量，3.0克碳水化合物，5.0克蛋白质，3.0克脂肪，0毫克维生素C，80毫克钾。特点是易消化，快速补充蛋白，清淡养胃。"
+  }
+]

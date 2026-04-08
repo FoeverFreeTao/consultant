@@ -1,0 +1,137 @@
+[
+  {
+    "id": "apple",
+    "name": "苹果",
+    "category": "常见水果",
+    "nutrition_per_100g": {
+      "kcal": 52,
+      "carbohydrate_g": 14,
+      "protein_g": 0.3,
+      "fat_g": 0.2,
+      "vitamin_c_mg": 4.6,
+      "potassium_mg": 107
+    },
+    "features": ["富含膳食纤维", "促进消化"],
+    "text_for_embedding": "苹果是一种常见水果。每100克含52千卡热量，14克碳水化合物，0.3克蛋白质，0.2克脂肪，4.6毫克维生素C，107毫克钾。特点是富含膳食纤维，有助于促进消化。"
+  },
+  {
+    "id": "banana",
+    "name": "香蕉",
+    "category": "高能量水果",
+    "nutrition_per_100g": {
+      "kcal": 89,
+      "carbohydrate_g": 23,
+      "protein_g": 1.1,
+      "fat_g": 0.3,
+      "vitamin_c_mg": 8.7,
+      "potassium_mg": 358
+    },
+    "features": ["富含钾元素", "有助于维持心脏和肌肉功能"],
+    "text_for_embedding": "香蕉是一种高能量水果。每100克含89千卡热量，23克碳水化合物，1.1克蛋白质，0.3克脂肪，8.7毫克维生素C，358毫克钾。特点是富含钾元素，有助于维持心脏和肌肉功能。"
+  },
+  {
+    "id": "orange",
+    "name": "橙子",
+    "category": "富含维生素的水果",
+    "nutrition_per_100g": {
+      "kcal": 47,
+      "carbohydrate_g": 12,
+      "protein_g": 0.9,
+      "fat_g": 0.1,
+      "vitamin_c_mg": 53.2,
+      "potassium_mg": 181
+    },
+    "features": ["维生素C含量高", "有助于增强免疫力"],
+    "text_for_embedding": "橙子是一种富含维生素的水果。每100克含47千卡热量，12克碳水化合物，0.9克蛋白质，0.1克脂肪，53.2毫克维生素C，181毫克钾。特点是维生素C含量高，有助于增强免疫力。"
+  },
+  {
+    "id": "strawberry",
+    "name": "草莓",
+    "category": "低热量水果",
+    "nutrition_per_100g": {
+      "kcal": 33,
+      "carbohydrate_g": 8,
+      "protein_g": 0.7,
+      "fat_g": 0.3,
+      "vitamin_c_mg": 58.8,
+      "potassium_mg": 153
+    },
+    "features": ["富含抗氧化物", "有助于延缓衰老"],
+    "text_for_embedding": "草莓是一种低热量水果。每100克含33千卡热量，8克碳水化合物，0.7克蛋白质，0.3克脂肪，58.8毫克维生素C，153毫克钾。特点是富含抗氧化物，有助于延缓衰老。"
+  },
+  {
+    "id": "grape",
+    "name": "葡萄",
+    "category": "甜味水果",
+    "nutrition_per_100g": {
+      "kcal": 69,
+      "carbohydrate_g": 18,
+      "protein_g": 0.7,
+      "fat_g": 0.2,
+      "vitamin_c_mg": 10.8,
+      "potassium_mg": 191
+    },
+    "features": ["含有花青素", "有抗氧化作用"],
+    "text_for_embedding": "葡萄是一种甜味水果。每100克含69千卡热量，18克碳水化合物，0.7克蛋白质，0.2克脂肪，10.8毫克维生素C，191毫克钾。特点是含有花青素，有抗氧化作用。"
+  },
+  {
+    "id": "watermelon",
+    "name": "西瓜",
+    "category": "高水分水果",
+    "nutrition_per_100g": {
+      "kcal": 30,
+      "carbohydrate_g": 8,
+      "protein_g": 0.6,
+      "fat_g": 0.2,
+      "vitamin_c_mg": 8.1,
+      "potassium_mg": 112
+    },
+    "features": ["水分含量高", "适合夏季补水"],
+    "text_for_embedding": "西瓜是一种高水分水果。每100克含30千卡热量，8克碳水化合物，0.6克蛋白质，0.2克脂肪，8.1毫克维生素C，112毫克钾。特点是水分含量高，适合夏季补水。"
+  },
+  {
+    "id": "kiwi",
+    "name": "猕猴桃",
+    "category": "营养密集型水果",
+    "nutrition_per_100g": {
+      "kcal": 61,
+      "carbohydrate_g": 15,
+      "protein_g": 1.1,
+      "fat_g": 0.5,
+      "vitamin_c_mg": 92.7,
+      "potassium_mg": 312
+    },
+    "features": ["维生素C含量极高"],
+    "text_for_embedding": "猕猴桃是一种营养密集型水果。每100克含61千卡热量，15克碳水化合物，1.1克蛋白质，0.5克脂肪，92.7毫克维生素C，312毫克钾。特点是维生素C含量极高。"
+  },
+  {
+    "id": "pineapple",
+    "name": "菠萝",
+    "category": "热带水果",
+    "nutrition_per_100g": {
+      "kcal": 50,
+      "carbohydrate_g": 13,
+      "protein_g": 0.5,
+      "fat_g": 0.1,
+      "vitamin_c_mg": 47.8,
+      "potassium_mg": 109
+    },
+    "features": ["含有菠萝蛋白酶", "有助于消化"],
+    "text_for_embedding": "菠萝是一种热带水果。每100克含50千卡热量，13克碳水化合物，0.5克蛋白质，0.1克脂肪，47.8毫克维生素C，109毫克钾。特点是含有菠萝蛋白酶，有助于消化。"
+  },
+  {
+    "id": "blueberry",
+    "name": "蓝莓",
+    "category": "抗氧化水果",
+    "nutrition_per_100g": {
+      "kcal": 57,
+      "carbohydrate_g": 14,
+      "protein_g": 0.7,
+      "fat_g": 0.3,
+      "vitamin_c_mg": 9.7,
+      "potassium_mg": 77
+    },
+    "features": ["富含抗氧化物", "有助于保护细胞"],
+    "text_for_embedding": "蓝莓是一种抗氧化水果。每100克含57千卡热量，14克碳水化合物，0.7克蛋白质，0.3克脂肪，9.7毫克维生素C，77毫克钾。特点是富含抗氧化物，有助于保护细胞。"
+  }
+]

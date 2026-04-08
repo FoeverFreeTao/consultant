@@ -63,8 +63,9 @@ public class CommonConfig {
 //    @Bean
 //    public EmbeddingStore  embeddingStore(){
 //        //1。加载文档进内存
-////        List<Document> documents = ClassPathDocumentLoader.loadDocuments("content");
-//        List<Document> documents = ClassPathDocumentLoader.loadDocuments("content",new ApachePdfBoxDocumentParser());
+//        List<Document> documents = ClassPathDocumentLoader.loadDocuments("content");
+//        //pdf类
+////        List<Document> documents = ClassPathDocumentLoader.loadDocuments("content",new ApachePdfBoxDocumentParser());
 ////        List<Document> documents = FileSystemDocumentLoader.loadDocuments("c:content");
 //        //2.构建向量数据库操作对象,操作的是内存版本的向量数据库
 ////        InMemoryEmbeddingStore store = new InMemoryEmbeddingStore();

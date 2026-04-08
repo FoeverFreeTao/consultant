@@ -1,0 +1,182 @@
+[
+  {
+    "id": "pork_lean",
+    "name": "猪瘦肉（里脊）",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 155,
+      "carbohydrate_g": 1.5,
+      "protein_g": 20.3,
+      "fat_g": 6.2,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 305
+    },
+    "features": ["优质蛋白", "铁、锌含量丰富"],
+    "text_for_embedding": "猪瘦肉（里脊）是一种肉类。每100克含155千卡热量，1.5克碳水化合物，20.3克蛋白质，6.2克脂肪，0毫克维生素C，305毫克钾。特点是优质蛋白，铁、锌含量丰富。"
+  },
+  {
+    "id": "beef_lean",
+    "name": "牛肉（瘦）",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 106,
+      "carbohydrate_g": 1.2,
+      "protein_g": 20.2,
+      "fat_g": 2.3,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 284
+    },
+    "features": ["低脂高蛋白", "富含铁、维生素B12"],
+    "text_for_embedding": "牛肉（瘦）是一种肉类。每100克含106千卡热量，1.2克碳水化合物，20.2克蛋白质，2.3克脂肪，0毫克维生素C，284毫克钾。特点是低脂高蛋白，富含铁、维生素B12。"
+  },
+  {
+    "id": "lamb_lean",
+    "name": "羊肉（瘦）",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 118,
+      "carbohydrate_g": 0.2,
+      "protein_g": 20.5,
+      "fat_g": 3.9,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 310
+    },
+    "features": ["含左旋肉碱", "暖身", "铁含量高"],
+    "text_for_embedding": "羊肉（瘦）是一种肉类。每100克含118千卡热量，0.2克碳水化合物，20.5克蛋白质，3.9克脂肪，0毫克维生素C，310毫克钾。特点是含左旋肉碱，暖身，铁含量高。"
+  },
+  {
+    "id": "chicken_breast",
+    "name": "鸡胸肉（去皮）",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 118,
+      "carbohydrate_g": 0.6,
+      "protein_g": 24.6,
+      "fat_g": 1.9,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 338
+    },
+    "features": ["低脂高蛋白", "健身首选"],
+    "text_for_embedding": "鸡胸肉（去皮）是一种肉类。每100克含118千卡热量，0.6克碳水化合物，24.6克蛋白质，1.9克脂肪，0毫克维生素C，338毫克钾。特点是低脂高蛋白，健身首选。"
+  },
+  {
+    "id": "chicken_thigh",
+    "name": "鸡腿肉（去皮）",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 167,
+      "carbohydrate_g": 0.6,
+      "protein_g": 19.3,
+      "fat_g": 9.7,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 242
+    },
+    "features": ["口感鲜嫩", "含烟酸", "护心血管"],
+    "text_for_embedding": "鸡腿肉（去皮）是一种肉类。每100克含167千卡热量，0.6克碳水化合物，19.3克蛋白质，9.7克脂肪，0毫克维生素C，242毫克钾。特点是口感鲜嫩，含烟酸，护心血管。"
+  },
+  {
+    "id": "duck_lean",
+    "name": "鸭肉（瘦）",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 149,
+      "carbohydrate_g": 0.2,
+      "protein_g": 19.4,
+      "fat_g": 7.7,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 233
+    },
+    "features": ["含B族维生素", "滋阴补虚"],
+    "text_for_embedding": "鸭肉（瘦）是一种肉类。每100克含149千卡热量，0.2克碳水化合物，19.4克蛋白质，7.7克脂肪，0毫克维生素C，233毫克钾。特点是含B族维生素，滋阴补虚。"
+  },
+  {
+    "id": "goose_lean",
+    "name": "鹅肉（瘦）",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 251,
+      "carbohydrate_g": 0.0,
+      "protein_g": 17.9,
+      "fat_g": 19.9,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 232
+    },
+    "features": ["优质蛋白", "脂肪多为不饱和脂肪酸"],
+    "text_for_embedding": "鹅肉（瘦）是一种肉类。每100克含251千卡热量，0.0克碳水化合物，17.9克蛋白质，19.9克脂肪，0毫克维生素C，232毫克钾。特点是优质蛋白，脂肪多为不饱和脂肪酸。"
+  },
+  {
+    "id": "pork_liver",
+    "name": "猪肝",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 129,
+      "carbohydrate_g": 5.0,
+      "protein_g": 19.3,
+      "fat_g": 3.5,
+      "vitamin_c_mg": 20,
+      "potassium_mg": 235
+    },
+    "features": ["维生素A、铁含量极高", "补血"],
+    "text_for_embedding": "猪肝是一种肉类。每100克含129千卡热量，5.0克碳水化合物，19.3克蛋白质，3.5克脂肪，20毫克维生素C，235毫克钾。特点是维生素A、铁含量极高，补血。"
+  },
+  {
+    "id": "pork_kidney",
+    "name": "猪腰子",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 96,
+      "carbohydrate_g": 2.1,
+      "protein_g": 15.4,
+      "fat_g": 3.2,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 217
+    },
+    "features": ["含锌、硒", "补肾", "胆固醇较高"],
+    "text_for_embedding": "猪腰子是一种肉类。每100克含96千卡热量，2.1克碳水化合物，15.4克蛋白质，3.2克脂肪，0毫克维生素C，217毫克钾。特点是含锌、硒，补肾，胆固醇较高。"
+  },
+  {
+    "id": "beef_shank",
+    "name": "牛腱子肉",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 125,
+      "carbohydrate_g": 0.0,
+      "protein_g": 20.1,
+      "fat_g": 4.4,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 270
+    },
+    "features": ["高蛋白低脂", "适合卤制、炖煮"],
+    "text_for_embedding": "牛腱子肉是一种肉类。每100克含125千卡热量，0.0克碳水化合物，20.1克蛋白质，4.4克脂肪，0毫克维生素C，270毫克钾。特点是高蛋白低脂，适合卤制、炖煮。"
+  },
+  {
+    "id": "rabbit",
+    "name": "兔肉",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 102,
+      "carbohydrate_g": 0.9,
+      "protein_g": 19.7,
+      "fat_g": 2.2,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 284
+    },
+    "features": ["低脂高蛋白", "被称为荤中之素"],
+    "text_for_embedding": "兔肉是一种肉类。每100克含102千卡热量，0.9克碳水化合物，19.7克蛋白质，2.2克脂肪，0毫克维生素C，284毫克钾。特点是低脂高蛋白，被称为荤中之素。"
+  },
+  {
+    "id": "turkey_breast",
+    "name": "火鸡胸肉",
+    "category": "肉类",
+    "nutrition_per_100g": {
+      "kcal": 109,
+      "carbohydrate_g": 0.0,
+      "protein_g": 23.1,
+      "fat_g": 1.2,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 239
+    },
+    "features": ["极低脂高蛋白", "适合减脂期"],
+    "text_for_embedding": "火鸡胸肉是一种肉类。每100克含109千卡热量，0.0克碳水化合物，23.1克蛋白质，1.2克脂肪，0毫克维生素C，239毫克钾。特点是极低脂高蛋白，适合减脂期。"
+  }
+]
