@@ -2,6 +2,7 @@ package com.zyt.consultant.controller;
 
 import com.zyt.consultant.entity.User;
 import com.zyt.consultant.entity.UserDailyStatus;
+import com.zyt.consultant.metrics.BusinessMetrics;
 import com.zyt.consultant.service.UserDailyStatusService;
 import com.zyt.consultant.service.UserService;
 import org.slf4j.Logger;
@@ -31,10 +32,13 @@ public class UserController {
 
     @Autowired
     private UserDailyStatusService userDailyStatusService;
+    @Autowired
+    private BusinessMetrics businessMetrics;
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterRequest request) {
         if (request == null || !StringUtils.hasText(request.getName()) || !StringUtils.hasText(request.getPhone()) || !StringUtils.hasText(request.getPassword())) {
+            businessMetrics.recordUserAction("register", "invalid");
             return ResponseEntity.badRequest().body(buildResponse(false, "注册参数不完整", null));
         }
         User user = new User();
@@ -45,20 +49,25 @@ public class UserController {
         user.setWeight(request.getWeight());
         User created = userService.register(user, request.getPassword());
         if (created == null) {
+            businessMetrics.recordUserAction("register", "failed");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(buildResponse(false, "注册失败，手机号已存在或密码不符合要求", null));
         }
+        businessMetrics.recordUserAction("register", "success");
         return ResponseEntity.ok(buildResponse(true, "注册成功", sanitizeUser(created)));
     }
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
         if (request == null || !StringUtils.hasText(request.getPhone()) || !StringUtils.hasText(request.getPassword())) {
+            businessMetrics.recordUserAction("login", "invalid");
             return ResponseEntity.badRequest().body(buildResponse(false, "登录参数不完整", null));
         }
         User user = userService.login(request.getPhone().trim(), request.getPassword());
         if (user == null) {
+            businessMetrics.recordUserAction("login", "failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(buildResponse(false, "手机号或密码错误", null));
         }
+        businessMetrics.recordUserAction("login", "success");
         return ResponseEntity.ok(buildResponse(true, "登录成功", sanitizeUser(user)));
     }
 
@@ -66,14 +75,17 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> profile(@RequestParam("phone") String phone) {
         User user = userService.findByPhone(phone);
         if (user == null) {
+            businessMetrics.recordUserAction("profile", "not_found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(buildResponse(false, "用户不存在", null));
         }
+        businessMetrics.recordUserAction("profile", "success");
         return ResponseEntity.ok(buildResponse(true, "获取成功", sanitizeUser(user)));
     }
 
     @PostMapping("/profile/update")
     public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody UpdateProfileRequest request) {
         if (request == null || !StringUtils.hasText(request.getPhone()) || !StringUtils.hasText(request.getName())) {
+            businessMetrics.recordUserAction("profile_update", "invalid");
             return ResponseEntity.badRequest().body(buildResponse(false, "修改参数不完整", null));
         }
         User user = new User();
@@ -84,8 +96,10 @@ public class UserController {
         user.setWeight(request.getWeight());
         User updated = userService.updateProfile(user);
         if (updated == null) {
+            businessMetrics.recordUserAction("profile_update", "failed");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(buildResponse(false, "用户不存在或修改失败", null));
         }
+        businessMetrics.recordUserAction("profile_update", "success");
         return ResponseEntity.ok(buildResponse(true, "修改成功", sanitizeUser(updated)));
     }
 
@@ -93,12 +107,15 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> daily(@RequestParam("userId") Long userId) {
         log.info("daily query request, userId={}", userId);
         if (userId == null || userId <= 0) {
+            businessMetrics.recordUserAction("daily_query", "invalid");
             return ResponseEntity.ok(buildResponse(false, "用户不存在", null));
         }
         UserDailyStatus status = userDailyStatusService.getOrCreateByUserId(userId);
         if (status == null) {
+            businessMetrics.recordUserAction("daily_query", "not_found");
             return ResponseEntity.ok(buildResponse(false, "用户不存在", null));
         }
+        businessMetrics.recordUserAction("daily_query", "success");
         return ResponseEntity.ok(buildResponse(true, "获取成功", sanitizeDailyStatus(status)));
     }
 
@@ -110,6 +127,7 @@ public class UserController {
                 request == null ? null : request.getSleepHour(),
                 request == null ? null : request.getActivityMinute());
         if (request == null || request.getUserId() == null || request.getUserId() <= 0) {
+            businessMetrics.recordUserAction("daily_update", "invalid");
             return ResponseEntity.badRequest().body(buildResponse(false, "修改参数不完整", null));
         }
         UserDailyStatus status = new UserDailyStatus();
@@ -119,8 +137,11 @@ public class UserController {
         status.setActivityMinute(request.getActivityMinute());
         UserDailyStatus updated = userDailyStatusService.updateByUserId(status);
         if (updated == null) {
+            businessMetrics.recordUserAction("daily_update", "failed");
             return ResponseEntity.ok(buildResponse(false, "用户不存在或修改失败", null));
         }
+        businessMetrics.recordUserAction("daily_update", "success");
+        businessMetrics.recordDailyStatus(updated.getHydrationMl(), updated.getSleepHour(), updated.getActivityMinute());
         return ResponseEntity.ok(buildResponse(true, "修改成功", sanitizeDailyStatus(updated)));
     }
 
