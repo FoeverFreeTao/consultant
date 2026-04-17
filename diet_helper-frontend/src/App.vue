@@ -6,9 +6,10 @@ const userProfile = ref({
   age: 29,
   heightCm: 168,
   weightKg: 62,
-  target: '控脂增肌',
-  allergy: '无明显过敏源'
+  target: '减脂与健康管理',
+  allergy: '无'
 })
+
 const activeUser = ref(null)
 const isAuthenticated = ref(false)
 const authMode = ref('login')
@@ -26,6 +27,7 @@ const authForm = ref({
   registerHeight: '',
   registerWeight: ''
 })
+
 const profileModalVisible = ref(false)
 const profileSaving = ref(false)
 const profileMessage = ref('')
@@ -37,6 +39,7 @@ const profileForm = ref({
   target: '',
   allergy: ''
 })
+
 const dailyModalVisible = ref(false)
 const dailySaving = ref(false)
 const dailyMessage = ref('')
@@ -50,26 +53,52 @@ const hydrationMl = ref(1350)
 const sleepHour = ref(7.2)
 const activityMinute = ref(42)
 
+const skillCatalog = ref([])
+const selectedSkillIds = ref([])
+const skillsLoading = ref(false)
+const skillsSaving = ref(false)
+const skillsMessage = ref('')
+
 const quickPrompts = [
-  '我今天午餐吃什么更容易控糖？',
-  '帮我安排一份一周减脂早餐计划',
-  '晚上加班后该怎么吃，避免长胖？',
-  '我最近胃口差，有没有清淡高蛋白建议？'
+  '我今天午餐怎么吃更控糖？',
+  '帮我安排一周减脂早餐计划。',
+  '晚上加班后吃什么不容易胖？',
+  '有没有清淡又高蛋白的晚餐建议？'
 ]
 
-const mealSuggestions = [
-  { time: '早餐', idea: '燕麦 + 鸡蛋 + 一份水果', principle: '高纤维与优质蛋白提升饱腹感' },
-  { time: '午餐', idea: '半盘蔬菜 + 全谷主食 + 鱼禽豆', principle: '按照餐盘法控制总热量与血糖波动' },
-  { time: '晚餐', idea: '清蒸蛋白 + 深色蔬菜 + 少量主食', principle: '晚间降低精制碳水摄入比例' },
-  { time: '加餐', idea: '无糖酸奶或原味坚果', principle: '避免空腹高糖零食导致暴食' }
+const defaultMealSuggestions = [
+  { time: '早餐', idea: '燕麦 + 鸡蛋 + 一份水果', principle: '高纤维搭配蛋白质，提升饱腹感' },
+  { time: '午餐', idea: '半盘蔬菜 + 全谷主食 + 鱼/鸡胸', principle: '餐盘法控制热量与营养平衡' },
+  { time: '晚餐', idea: '优质蛋白 + 深色蔬菜 + 少量主食', principle: '晚间降低精制碳水比例' },
+  { time: '加餐', idea: '无糖酸奶或少量坚果', principle: '避免高糖零食引发暴食' }
 ]
+const mealSuggestions = ref([...defaultMealSuggestions])
+
+const skillNameMap = {
+  fat_loss: '减脂教练',
+  muscle_gain: '增肌教练',
+  low_sodium: '低盐饮食',
+  diabetes_friendly: '控糖友好',
+  quick_meal: '快手餐'
+}
+
+const skillDescMap = {
+  fat_loss: '优先推荐低热量、高饱腹感的饮食方案。',
+  muscle_gain: '优先推荐高蛋白分配和训练恢复方案。',
+  low_sodium: '优先推荐低钠饮食和减盐替代方案。',
+  diabetes_friendly: '优先推荐低 GI 碳水与稳糖饮食策略。',
+  quick_meal: '优先推荐 10-20 分钟可完成的简单餐食。'
+}
+
+const skillDisplayName = (skill) => skillNameMap[skill?.id] || skill?.name || ''
+const skillDisplayDesc = (skill) => skillDescMap[skill?.id] || skill?.description || ''
 
 const chatInput = ref('')
 const loading = ref(false)
 const messages = ref([
   {
     role: 'assistant',
-    content: '你好，我是你的 AI 饮食健康管理师。告诉我你的目标和饮食习惯，我会给你合理健康的餐食与生活方式建议。'
+    content: '你好，我是你的 AI 饮食顾问。告诉我你的目标和习惯，我会给你更容易执行的建议。'
   }
 ])
 
@@ -131,6 +160,8 @@ const applyUser = (user, persist = true) => {
   }
   if (user.id) {
     fetchDailyStatus(user.id)
+    fetchUserSkills(user.id)
+    fetchMealSuggestions(user.id)
   }
 }
 
@@ -138,9 +169,12 @@ const logout = () => {
   isAuthenticated.value = false
   activeUser.value = null
   localStorage.removeItem(storageKey)
-  authMessage.value = '你已退出登录'
+  authMessage.value = '已退出登录'
   profileModalVisible.value = false
   dailyModalVisible.value = false
+  selectedSkillIds.value = []
+  skillsMessage.value = ''
+  mealSuggestions.value = [...defaultMealSuggestions]
 }
 
 const switchAuthMode = (mode) => {
@@ -191,6 +225,109 @@ const fetchDailyStatus = async (userId) => {
   sleepHour.value = Number(data.sleepHour) || sleepHour.value
   activityMinute.value = Number(data.activityMinute) || activityMinute.value
   return data
+}
+
+const fetchMealSuggestions = async (userId) => {
+  if (!userId) {
+    mealSuggestions.value = [...defaultMealSuggestions]
+    return
+  }
+  try {
+    const params = new URLSearchParams({ userId: String(userId) })
+    const response = await fetch(`/user/diet/suggestions?${params.toString()}`)
+    const body = await response.json().catch(() => ({}))
+    if (!response.ok || !body.success) {
+      throw new Error(body.message || '获取饮食建议失败')
+    }
+    const meals = body?.data?.meals
+    if (Array.isArray(meals) && meals.length > 0) {
+      mealSuggestions.value = meals
+      return
+    }
+    mealSuggestions.value = [...defaultMealSuggestions]
+  } catch (error) {
+    mealSuggestions.value = [...defaultMealSuggestions]
+  }
+}
+
+const loadSkillCatalog = async () => {
+  if (skillsLoading.value) {
+    return
+  }
+  skillsLoading.value = true
+  try {
+    const response = await fetch('/skills/list')
+    const body = await response.json().catch(() => ({}))
+    if (!response.ok || !body.success) {
+      throw new Error(body.message || '加载技能失败')
+    }
+    skillCatalog.value = Array.isArray(body.data) ? body.data : []
+  } catch (error) {
+    skillsMessage.value = error.message || '加载技能失败'
+  } finally {
+    skillsLoading.value = false
+  }
+}
+
+const fetchUserSkills = async (userId) => {
+  if (!userId) {
+    selectedSkillIds.value = []
+    return
+  }
+  try {
+    const params = new URLSearchParams({ userId: String(userId) })
+    const response = await fetch(`/skills/user?${params.toString()}`)
+    const body = await response.json().catch(() => ({}))
+    if (!response.ok || !body.success) {
+      throw new Error(body.message || '加载已选技能失败')
+    }
+    const selected = Array.isArray(body.data) ? body.data.map((item) => item.id).filter(Boolean) : []
+    selectedSkillIds.value = selected
+  } catch (error) {
+    skillsMessage.value = error.message || '加载已选技能失败'
+  }
+}
+
+const toggleSkillSelection = (skillId) => {
+  const current = new Set(selectedSkillIds.value)
+  if (current.has(skillId)) {
+    current.delete(skillId)
+  } else {
+    current.add(skillId)
+  }
+  selectedSkillIds.value = Array.from(current)
+}
+
+const saveSkills = async () => {
+  if (!activeUser.value?.id || skillsSaving.value) {
+    return
+  }
+  skillsSaving.value = true
+  skillsMessage.value = ''
+  try {
+    const payload = {
+      userId: activeUser.value.id,
+      skillIds: selectedSkillIds.value
+    }
+    const response = await fetch('/skills/user/apply', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+    const body = await response.json().catch(() => ({}))
+    if (!response.ok || !body.success) {
+      throw new Error(body.message || '应用技能失败')
+    }
+    const selected = Array.isArray(body.data) ? body.data.map((item) => item.id).filter(Boolean) : []
+    selectedSkillIds.value = selected
+    skillsMessage.value = '技能已应用'
+  } catch (error) {
+    skillsMessage.value = error.message || '应用技能失败'
+  } finally {
+    skillsSaving.value = false
+  }
 }
 
 const openProfileModal = () => {
@@ -251,7 +388,7 @@ const submitProfileUpdate = async () => {
     })
     const body = await response.json().catch(() => ({}))
     if (!response.ok || !body.success) {
-      throw new Error(body.message || '修改失败')
+      throw new Error(body.message || '更新个人信息失败')
     }
     userProfile.value.target = profileForm.value.target.trim() || userProfile.value.target
     userProfile.value.allergy = profileForm.value.allergy.trim() || userProfile.value.allergy
@@ -259,7 +396,7 @@ const submitProfileUpdate = async () => {
     profileMessage.value = '个人信息已更新'
     profileModalVisible.value = false
   } catch (error) {
-    profileMessage.value = error.message || '修改失败'
+    profileMessage.value = error.message || '更新个人信息失败'
   } finally {
     profileSaving.value = false
   }
@@ -308,13 +445,13 @@ const submitDailyUpdate = async () => {
     })
     const body = await response.json().catch(() => ({}))
     if (!response.ok || !body.success) {
-      throw new Error(body.message || '修改失败')
+      throw new Error(body.message || '更新日常状态失败')
     }
     await fetchDailyStatus(activeUser.value.id)
-    dailyMessage.value = '日常信息已更新'
+    dailyMessage.value = '日常状态已更新'
     dailyModalVisible.value = false
   } catch (error) {
-    dailyMessage.value = error.message || '修改失败'
+    dailyMessage.value = error.message || '更新日常状态失败'
   } finally {
     dailySaving.value = false
   }
@@ -367,15 +504,6 @@ const submitRegister = async () => {
   }
 }
 
-restoreAuth()
-if (activeUser.value?.phone) {
-  fetchLatestProfile(activeUser.value.phone).then((latest) => {
-    if (latest) {
-      applyUser(latest)
-    }
-  })
-}
-
 const askPrompt = async (prompt) => {
   chatInput.value = prompt
   await submitQuestion()
@@ -384,15 +512,15 @@ const askPrompt = async (prompt) => {
 const localDietAdvice = (question) => {
   const q = question.toLowerCase()
   if (q.includes('控糖') || q.includes('血糖')) {
-    return '控糖建议：每餐优先吃蔬菜，再吃蛋白质，最后吃主食；主食可替换为糙米、燕麦、玉米等低 GI 食物。'
+    return '建议优先低 GI 主食，吃饭顺序按“蔬菜-蛋白质-主食”。'
   }
-  if (q.includes('减脂') || q.includes('长胖')) {
-    return '减脂建议：每日总热量轻度负平衡，保证每公斤体重 1.2-1.6g 蛋白质，避免液体糖与夜间高油高盐外卖。'
+  if (q.includes('减脂') || q.includes('减肥')) {
+    return '建议轻微热量缺口，保证充足蛋白，并减少高油高糖外卖。'
   }
   if (q.includes('增肌') || q.includes('蛋白')) {
-    return '增肌建议：三餐均匀分配蛋白质，训练后 1 小时内补充蛋白 + 适量碳水，优先选择鸡蛋、鱼、瘦肉、豆制品。'
+    return '建议把蛋白平均分配到三餐，训练后补充蛋白与适量碳水。'
   }
-  return '通用建议：遵循“半盘蔬菜、四分之一优质蛋白、四分之一全谷主食”，规律作息，每周保持至少 150 分钟中等强度运动。'
+  return '建议按“半盘蔬菜、四分之一蛋白、四分之一主食”搭配。'
 }
 
 const submitQuestion = async () => {
@@ -429,11 +557,21 @@ const submitQuestion = async () => {
   } catch (error) {
     messages.value.push({
       role: 'assistant',
-      content: `${localDietAdvice(question)}（当前已启用离线建议模式）`
+      content: `${localDietAdvice(question)}（当前为离线建议模式）`
     })
   } finally {
     loading.value = false
   }
+}
+
+loadSkillCatalog()
+restoreAuth()
+if (activeUser.value?.phone) {
+  fetchLatestProfile(activeUser.value.phone).then((latest) => {
+    if (latest) {
+      applyUser(latest)
+    }
+  })
 }
 </script>
 
@@ -443,34 +581,19 @@ const submitQuestion = async () => {
       <div>
         <p class="tag">AI 饮食健康管理师</p>
         <h1>你的个人饮食与健康助手</h1>
-        <p class="desc">
-          基于现代营养学与健康管理通用原则，结合你的目标、体态与作息，提供可持续执行的饮食建议。
-        </p>
-        <p class="desc">在我的帮助下你的身体会变得更健康</p>
+        <p class="desc">结合你的目标与习惯，给出更可执行的营养建议。</p>
       </div>
       <div class="metrics">
-        <div class="metric-item">
-          <span>BMI</span>
-          <strong>{{ bmi }}</strong>
-        </div>
-        <div class="metric-item">
-          <span>饮水进度</span>
-          <strong>{{ hydrationProgress }}%</strong>
-        </div>
-        <div class="metric-item">
-          <span>睡眠</span>
-          <strong>{{ sleepHour }}h</strong>
-        </div>
-        <div class="metric-item">
-          <span>活动</span>
-          <strong>{{ activityMinute }}min</strong>
-        </div>
+        <div class="metric-item"><span>BMI</span><strong>{{ bmi }}</strong></div>
+        <div class="metric-item"><span>饮水进度</span><strong>{{ hydrationProgress }}%</strong></div>
+        <div class="metric-item"><span>睡眠</span><strong>{{ sleepHour }}h</strong></div>
+        <div class="metric-item"><span>活动</span><strong>{{ activityMinute }}min</strong></div>
       </div>
       <div class="auth-state">
         <span>{{ isAuthenticated ? `已登录：${userProfile.nickname}` : '未登录' }}</span>
         <div v-if="isAuthenticated" class="auth-actions">
           <button type="button" @click="openProfileModal">修改个人信息</button>
-          <button type="button" @click="openDailyModal">修改日常信息</button>
+          <button type="button" @click="openDailyModal">修改日常状态</button>
           <button type="button" @click="logout">退出登录</button>
         </div>
       </div>
@@ -479,27 +602,23 @@ const submitQuestion = async () => {
     <section v-if="!isAuthenticated" class="auth card">
       <h2>账号中心</h2>
       <div class="auth-tabs">
-        <button type="button" :class="{ active: authMode === 'login' }" @click="switchAuthMode('login')">
-          登录
-        </button>
-        <button type="button" :class="{ active: authMode === 'register' }" @click="switchAuthMode('register')">
-          注册
-        </button>
+        <button type="button" :class="{ active: authMode === 'login' }" @click="switchAuthMode('login')">登录</button>
+        <button type="button" :class="{ active: authMode === 'register' }" @click="switchAuthMode('register')">注册</button>
       </div>
 
       <form v-if="authMode === 'login'" class="auth-form" @submit.prevent="submitLogin">
         <input v-model="authForm.loginPhone" type="text" placeholder="手机号" />
-        <input v-model="authForm.loginPassword" type="password" placeholder="密码（至少6位）" />
+        <input v-model="authForm.loginPassword" type="password" placeholder="密码" />
         <button type="submit" :disabled="authLoading">{{ authLoading ? '处理中...' : '登录' }}</button>
       </form>
 
       <form v-else class="auth-form" @submit.prevent="submitRegister">
         <input v-model="authForm.registerName" type="text" placeholder="姓名/昵称" />
         <input v-model="authForm.registerPhone" type="text" placeholder="手机号" />
-        <input v-model="authForm.registerPassword" type="password" placeholder="密码（至少6位）" />
+        <input v-model="authForm.registerPassword" type="password" placeholder="密码（至少 6 位）" />
         <input v-model="authForm.registerAge" type="number" placeholder="年龄（选填）" />
-        <input v-model="authForm.registerHeight" type="number" step="0.01" placeholder="身高（厘米或米，选填）" />
-        <input v-model="authForm.registerWeight" type="number" step="0.1" placeholder="体重（kg，选填）" />
+        <input v-model="authForm.registerHeight" type="number" step="0.01" placeholder="身高（米或厘米）" />
+        <input v-model="authForm.registerWeight" type="number" step="0.1" placeholder="体重（kg）" />
         <button type="submit" :disabled="authLoading">{{ authLoading ? '处理中...' : '注册并登录' }}</button>
       </form>
 
@@ -512,14 +631,12 @@ const submitQuestion = async () => {
         <form class="auth-form" @submit.prevent="submitProfileUpdate">
           <input v-model="profileForm.name" type="text" placeholder="姓名/昵称" />
           <input v-model="profileForm.age" type="number" placeholder="年龄" />
-          <input v-model="profileForm.height" type="number" step="0.01" placeholder="身高（厘米或米）" />
+          <input v-model="profileForm.height" type="number" step="0.01" placeholder="身高（米或厘米）" />
           <input v-model="profileForm.weight" type="number" step="0.1" placeholder="体重（kg）" />
-          <input v-model="profileForm.target" type="text" placeholder="管理目标（如：减脂塑形）" />
-          <input v-model="profileForm.allergy" type="text" placeholder="饮食注意（如：海鲜过敏）" />
-          <button type="submit" :disabled="profileSaving">{{ profileSaving ? '保存中...' : '保存修改' }}</button>
-          <button type="button" class="ghost-btn" :disabled="profileSaving" @click="closeProfileModal">
-            取消
-          </button>
+          <input v-model="profileForm.target" type="text" placeholder="管理目标" />
+          <input v-model="profileForm.allergy" type="text" placeholder="饮食注意事项" />
+          <button type="submit" :disabled="profileSaving">{{ profileSaving ? '保存中...' : '保存' }}</button>
+          <button type="button" class="ghost-btn" :disabled="profileSaving" @click="closeProfileModal">取消</button>
         </form>
         <p v-if="profileMessage" class="auth-message">{{ profileMessage }}</p>
       </div>
@@ -527,12 +644,12 @@ const submitQuestion = async () => {
 
     <section v-if="dailyModalVisible" class="profile-modal-mask">
       <div class="profile-modal card">
-        <h2>修改日常信息</h2>
+        <h2>修改日常状态</h2>
         <form class="auth-form" @submit.prevent="submitDailyUpdate">
           <input v-model="dailyForm.hydrationMl" type="number" placeholder="饮水量（ml）" />
           <input v-model="dailyForm.sleepHour" type="number" step="0.1" placeholder="睡眠时长（小时）" />
           <input v-model="dailyForm.activityMinute" type="number" placeholder="运动时长（分钟）" />
-          <button type="submit" :disabled="dailySaving">{{ dailySaving ? '保存中...' : '保存修改' }}</button>
+          <button type="submit" :disabled="dailySaving">{{ dailySaving ? '保存中...' : '保存' }}</button>
           <button type="button" class="ghost-btn" :disabled="dailySaving" @click="closeDailyModal">取消</button>
         </form>
         <p v-if="dailyMessage" class="auth-message">{{ dailyMessage }}</p>
@@ -543,35 +660,60 @@ const submitQuestion = async () => {
       <article class="card profile">
         <h2>个人信息</h2>
         <p><span>昵称</span>{{ userProfile.nickname }}</p>
-        <p><span>年龄</span>{{ userProfile.age }} 岁</p>
+        <p><span>年龄</span>{{ userProfile.age }}</p>
         <p><span>身高/体重</span>{{ userProfile.heightCm }} cm / {{ userProfile.weightKg }} kg</p>
-        <p><span>管理目标</span>{{ userProfile.target }}</p>
+        <p><span>目标</span>{{ userProfile.target }}</p>
         <p><span>饮食注意</span>{{ userProfile.allergy }}</p>
-        <p><span>登录手机号</span>{{ activeUser?.phone || '未登录' }}</p>
+        <p><span>手机号</span>{{ activeUser?.phone || '未登录' }}</p>
+
+        <div class="skills-panel">
+          <h3>技能偏好</h3>
+          <p class="skills-tip">勾选后点击“应用技能”，后续问答会按技能偏好进行。</p>
+          <div v-if="skillsLoading" class="skills-tip">技能加载中...</div>
+          <div v-else class="skills-list">
+            <label
+              v-for="skill in skillCatalog"
+              :key="skill.id"
+              class="skill-item"
+              :class="{ selected: selectedSkillIds.includes(skill.id) }"
+            >
+              <input
+                type="checkbox"
+                :checked="selectedSkillIds.includes(skill.id)"
+                :disabled="!isAuthenticated"
+                @change="toggleSkillSelection(skill.id)"
+              />
+              <div>
+                <strong>{{ skillDisplayName(skill) }}</strong>
+                <small>{{ skillDisplayDesc(skill) }}</small>
+              </div>
+            </label>
+          </div>
+          <button type="button" class="skills-save" :disabled="!isAuthenticated || skillsSaving" @click="saveSkills">
+            {{ skillsSaving ? '保存中...' : '应用技能' }}
+          </button>
+          <p v-if="skillsMessage" class="skills-tip">{{ skillsMessage }}</p>
+        </div>
       </article>
 
       <article class="card chat">
         <h2>智能咨询</h2>
         <div class="quick-list">
-          <button v-for="prompt in quickPrompts" :key="prompt" @click="askPrompt(prompt)">
-            {{ prompt }}
-          </button>
+          <button v-for="prompt in quickPrompts" :key="prompt" @click="askPrompt(prompt)">{{ prompt }}</button>
         </div>
 
         <div class="chat-box">
-          <div v-for="(message, index) in messages" :key="index" :class="['msg', message.role]">
-            {{ message.content }}
-          </div>
+          <div v-for="(message, index) in messages" :key="index" :class="['msg', message.role]">{{ message.content }}</div>
         </div>
 
         <form class="input-area" @submit.prevent="submitQuestion">
           <input
             v-model="chatInput"
             type="text"
-            :placeholder="isAuthenticated ? '输入你的饮食问题，例如：晚餐吃什么更健康？' : '请先登录后提问'"
+            :placeholder="isAuthenticated ? '输入你的饮食问题' : '请先登录后提问'"
             :disabled="!isAuthenticated"
           />
-          <button type="submit" :disabled="loading || !isAuthenticated">{{ loading ? '分析中...' : '发送' }}</button>
+          <button type="submit" :disabled="loading || !isAuthenticated">{{ loading ? '思考中...' : '发送' }}</button>
         </form>
       </article>
 
@@ -592,9 +734,14 @@ const submitQuestion = async () => {
 <style scoped>
 .page {
   min-height: 100vh;
-  padding: 32px 20px 40px;
+  padding: 20px 16px 28px;
   background: linear-gradient(180deg, #f4f8ff 0%, #f7fbf7 100%);
   color: #1f2937;
+  overflow-x: hidden;
+}
+
+.page * {
+  box-sizing: border-box;
 }
 
 .card {
@@ -607,7 +754,7 @@ const submitQuestion = async () => {
 .hero {
   max-width: 1160px;
   margin: 0 auto 18px;
-  padding: 28px;
+  padding: 22px;
   display: grid;
   gap: 18px;
 }
@@ -770,8 +917,9 @@ h1 {
   max-width: 1160px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 280px 1fr 320px;
+  grid-template-columns: minmax(260px, 300px) minmax(560px, 1fr) minmax(220px, 300px);
   gap: 16px;
+  align-items: stretch;
 }
 
 h2 {
@@ -783,7 +931,11 @@ h2 {
 .profile,
 .chat,
 .suggestions {
-  padding: 20px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 620px;
+  max-height: 620px;
 }
 
 .profile p {
@@ -791,16 +943,84 @@ h2 {
   justify-content: space-between;
   margin-bottom: 10px;
   font-size: 14px;
+  gap: 8px;
 }
 
 .profile span {
   color: #64748b;
 }
 
+.skills-panel {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5edf5;
+}
+
+.skills-panel h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.skills-tip {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.skills-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.skill-item {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: start;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #dfe9f5;
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+.skill-item.selected {
+  border-color: #0ea5a4;
+  background: #edfdfc;
+}
+
+.skill-item small {
+  display: block;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.skills-save {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #0ea5a4;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.skills-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .quick-list {
   display: grid;
   gap: 8px;
   margin-bottom: 12px;
+  max-height: 122px;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .quick-list button {
@@ -818,8 +1038,8 @@ h2 {
   border: 1px solid #e5edf5;
   border-radius: 12px;
   background: #fbfdff;
-  min-height: 260px;
-  max-height: 360px;
+  min-height: 0;
+  flex: 1;
   overflow-y: auto;
   padding: 12px;
   margin-bottom: 12px;
@@ -848,6 +1068,7 @@ h2 {
 .input-area {
   display: flex;
   gap: 10px;
+  margin-top: auto;
 }
 
 .input-area input {
@@ -876,6 +1097,8 @@ h2 {
 .meal-list {
   display: grid;
   gap: 10px;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .meal-item {
@@ -904,8 +1127,22 @@ h2 {
     grid-template-columns: 1fr;
   }
 
+  .profile,
+  .chat,
+  .suggestions {
+    min-height: auto;
+    max-height: none;
+  }
+
+  .quick-list,
+  .skills-list,
+  .meal-list {
+    max-height: none;
+  }
+
   .chat-box {
     min-height: 220px;
+    flex: none;
   }
 }
 </style>

@@ -22,6 +22,9 @@ public interface UserMapper extends BaseMapper<User> {
     @Select("select id, name, age, weight, height, bmi, phone, password, created_at, updated_at from user where phone = #{phone} limit 1")
     User findByPhone(String phone);
 
+    @Select("select id, name, age, weight, height, bmi, phone, password, created_at, updated_at from user where id = #{id} limit 1")
+    User findById(Long id);
+
     @Insert("insert into user(name, age, weight, height, bmi, phone, password, created_at, updated_at) values(#{name}, #{age}, #{weight}, #{height}, #{bmi}, #{phone}, #{password}, #{createdAt}, #{updatedAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insertUser(User user);

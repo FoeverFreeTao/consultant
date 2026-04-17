@@ -6,5 +6,6 @@ public interface UserService {
     User register(User user, String rawPassword);
     User login(String phone, String rawPassword);
     User findByPhone(String phone);
+    User findById(Long id);
     User updateProfile(User user);
 }

@@ -1,7 +1,7 @@
 package com.zyt.consultant.service.impl;
 
-import com.zyt.consultant.mapper.UserMapper;
 import com.zyt.consultant.entity.User;
+import com.zyt.consultant.mapper.UserMapper;
 import com.zyt.consultant.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-        created.setPassword(null); // 不返回密码
+        created.setPassword(null);
         return created;
     }
 
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-        user.setPassword(null); // 不返回密码
+        user.setPassword(null);
         return user;
     }
 
@@ -86,7 +86,22 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-        user.setPassword(null); // 不返回密码
+        user.setPassword(null);
+        return user;
+    }
+
+    @Override
+    public User findById(Long id) {
+        if (id == null || id <= 0) {
+            return null;
+        }
+
+        User user = userMapper.findById(id);
+        if (user == null) {
+            return null;
+        }
+
+        user.setPassword(null);
         return user;
     }
 
