@@ -8,6 +8,8 @@ import dev.langchain4j.rag.content.ContentMetadata;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.query.Query;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -70,14 +72,20 @@ public class HybridContentRetriever implements ContentRetriever {
             TextSegment segment = content.textSegment();
             String text = segment.text();
             String key = normalizeKey(text);
-            MergedHit hit = merged.computeIfAbsent(key, ignored -> new MergedHit(text, extractSource(segment.metadata()), segment.metadata().copy()));
+            MergedHit hit = merged.computeIfAbsent(
+                    key,
+                    ignored -> new MergedHit(text, extractSource(segment.metadata()), segment.metadata().copy())
+            );
             hit.vectorScore = Math.max(hit.vectorScore, extractContentScore(content));
             hit.segmentMetadata = mergeMetadata(hit.segmentMetadata, segment.metadata());
         }
 
         for (KeywordHit keywordHit : keywordHits) {
             String key = normalizeKey(keywordHit.text);
-            MergedHit hit = merged.computeIfAbsent(key, ignored -> new MergedHit(keywordHit.text, keywordHit.source, keywordHit.metadata.copy()));
+            MergedHit hit = merged.computeIfAbsent(
+                    key,
+                    ignored -> new MergedHit(keywordHit.text, keywordHit.source, keywordHit.metadata.copy())
+            );
             hit.keywordScore = Math.max(hit.keywordScore, keywordHit.score);
             hit.segmentMetadata = mergeMetadata(hit.segmentMetadata, keywordHit.metadata);
             if (hit.source == null || hit.source.isBlank()) {
@@ -101,8 +109,9 @@ public class HybridContentRetriever implements ContentRetriever {
         int limit = Math.max(1, finalMaxResults);
         List<Content> results = new ArrayList<>();
         for (MergedHit hit : reranked.subList(0, Math.min(limit, reranked.size()))) {
-            Metadata metadata = mergeMetadata(hit.segmentMetadata, Metadata.from("source", nonBlankSource(hit.source)));
-            TextSegment segment = TextSegment.from(toCitableText(hit.text, hit.source), metadata);
+            String cleanedSource = nonBlankSource(hit.source);
+            Metadata metadata = mergeMetadata(hit.segmentMetadata, Metadata.from("source", cleanedSource));
+            TextSegment segment = TextSegment.from(toCitableText(hit.text, cleanedSource), metadata);
 
             Map<ContentMetadata, Object> contentMetadata = new LinkedHashMap<>();
             contentMetadata.put(ContentMetadata.SCORE, hit.finalScore);
@@ -144,12 +153,7 @@ public class HybridContentRetriever implements ContentRetriever {
                 continue;
             }
 
-            hits.add(new KeywordHit(
-                    text,
-                    extractSource(segment.metadata()),
-                    segment.metadata(),
-                    score
-            ));
+            hits.add(new KeywordHit(text, extractSource(segment.metadata()), segment.metadata(), score));
         }
 
         hits.sort(Comparator.comparingDouble((KeywordHit h) -> h.score).reversed());
@@ -197,12 +201,12 @@ public class HybridContentRetriever implements ContentRetriever {
     }
 
     private String toCitableText(String text, String source) {
-        String safeSource = nonBlankSource(source);
-        return "[来源:" + safeSource + "]\n" + text;
+        return "[来源:" + nonBlankSource(source) + "]\n" + text;
     }
 
     private String nonBlankSource(String source) {
-        return (source == null || source.isBlank()) ? "《中国食物成分表》第 6 版）" : source;
+        String cleaned = cleanSource(source);
+        return (cleaned == null || cleaned.isBlank()) ? "知识库片段" : cleaned;
     }
 
     private String extractSource(Metadata metadata) {
@@ -212,10 +216,51 @@ public class HybridContentRetriever implements ContentRetriever {
         for (String key : SOURCE_KEYS) {
             String value = metadata.getString(key);
             if (value != null && !value.isBlank()) {
-                return value;
+                return cleanSource(value);
             }
         }
         return "";
+    }
+
+    private String cleanSource(String source) {
+        if (source == null || source.isBlank()) {
+            return "";
+        }
+
+        String s = source.trim();
+
+        if (s.contains("%")) {
+            try {
+                s = URLDecoder.decode(s, StandardCharsets.UTF_8);
+            } catch (Exception ignored) {
+                // keep original if decode fails
+            }
+        }
+
+        s = s.replace("\\", "/");
+        int queryIndex = s.indexOf('?');
+        if (queryIndex >= 0) {
+            s = s.substring(0, queryIndex);
+        }
+        int hashIndex = s.indexOf('#');
+        if (hashIndex >= 0) {
+            s = s.substring(0, hashIndex);
+        }
+
+        int lastSlash = s.lastIndexOf('/');
+        if (lastSlash >= 0 && lastSlash < s.length() - 1) {
+            s = s.substring(lastSlash + 1);
+        }
+
+        s = s.replace("[", "")
+                .replace("]", "")
+                .replace("《", "")
+                .replace("》", "")
+                .trim();
+
+        s = s.replaceAll("\\.(json|md|txt|pdf)$", "");
+
+        return s;
     }
 
     private String normalizeForKeyword(String text) {
