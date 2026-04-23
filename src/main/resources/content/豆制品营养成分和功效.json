@@ -1,0 +1,182 @@
+[
+  {
+    "id": "soybean",
+    "name": "黄豆",
+    "category": "豆类",
+    "nutrition_per_100g": {
+      "kcal": 359,
+      "carbohydrate_g": 34.4,
+      "protein_g": 35.0,
+      "fat_g": 16.0,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 1503
+    },
+    "features": ["植物蛋白之王", "富含钙、铁、大豆异黄酮"],
+    "text_for_embedding": "黄豆是一种豆类。每100克含359千卡热量，34.4克碳水化合物，35.0克蛋白质，16.0克脂肪，0毫克维生素C，1503毫克钾。特点是植物蛋白之王，富含钙、铁、大豆异黄酮。"
+  },
+  {
+    "id": "black_bean",
+    "name": "黑豆",
+    "category": "豆类",
+    "nutrition_per_100g": {
+      "kcal": 401,
+      "carbohydrate_g": 33.6,
+      "protein_g": 36.0,
+      "fat_g": 15.9,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 1376
+    },
+    "features": ["花青素丰富", "补肾益精", "膳食纤维极高"],
+    "text_for_embedding": "黑豆是一种豆类。每100克含401千卡热量，33.6克碳水化合物，36.0克蛋白质，15.9克脂肪，0毫克维生素C，1376毫克钾。特点是花青素丰富，补肾益精，膳食纤维极高。"
+  },
+  {
+    "id": "red_bean",
+    "name": "红豆（红小豆）",
+    "category": "豆类",
+    "nutrition_per_100g": {
+      "kcal": 324,
+      "carbohydrate_g": 63.4,
+      "protein_g": 20.2,
+      "fat_g": 0.6,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 860
+    },
+    "features": ["富含叶酸、铁", "补血消肿", "利水渗湿"],
+    "text_for_embedding": "红豆（红小豆）是一种豆类。每100克含324千卡热量，63.4克碳水化合物，20.2克蛋白质，0.6克脂肪，0毫克维生素C，860毫克钾。特点是富含叶酸、铁，补血消肿，利水渗湿。"
+  },
+  {
+    "id": "mung_bean",
+    "name": "绿豆",
+    "category": "豆类",
+    "nutrition_per_100g": {
+      "kcal": 329,
+      "carbohydrate_g": 62.0,
+      "protein_g": 21.6,
+      "fat_g": 0.8,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 787
+    },
+    "features": ["清热解毒", "含绿豆多糖", "抗氧化"],
+    "text_for_embedding": "绿豆是一种豆类。每100克含329千卡热量，62.0克碳水化合物，21.6克蛋白质，0.8克脂肪，0毫克维生素C，787毫克钾。特点是清热解毒，含绿豆多糖，抗氧化。"
+  },
+  {
+    "id": "chickpea",
+    "name": "鹰嘴豆",
+    "category": "豆类",
+    "nutrition_per_100g": {
+      "kcal": 364,
+      "carbohydrate_g": 59.6,
+      "protein_g": 20.6,
+      "fat_g": 6.9,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 899
+    },
+    "features": ["含支链氨基酸", "升糖指数低", "饱腹感强"],
+    "text_for_embedding": "鹰嘴豆是一种豆类。每100克含364千卡热量，59.6克碳水化合物，20.6克蛋白质，6.9克脂肪，0毫克维生素C，899毫克钾。特点是含支链氨基酸，升糖指数低，饱腹感强。"
+  },
+  {
+    "id": "peanut",
+    "name": "花生（生）",
+    "category": "坚果",
+    "nutrition_per_100g": {
+      "kcal": 567,
+      "carbohydrate_g": 25.8,
+      "protein_g": 24.8,
+      "fat_g": 48.0,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 587
+    },
+    "features": ["富含维生素E、白藜芦醇", "护心血管"],
+    "text_for_embedding": "花生（生）是一种坚果。每100克含567千卡热量，25.8克碳水化合物，24.8克蛋白质，48.0克脂肪，0毫克维生素C，587毫克钾。特点是富含维生素E、白藜芦醇，护心血管。"
+  },
+  {
+    "id": "walnut",
+    "name": "核桃（干）",
+    "category": "坚果",
+    "nutrition_per_100g": {
+      "kcal": 654,
+      "carbohydrate_g": 13.7,
+      "protein_g": 15.2,
+      "fat_g": 65.2,
+      "vitamin_c_mg": 1,
+      "potassium_mg": 441
+    },
+    "features": ["ω-3脂肪酸丰富", "补脑", "护眼"],
+    "text_for_embedding": "核桃（干）是一种坚果。每100克含654千卡热量，13.7克碳水化合物，15.2克蛋白质，65.2克脂肪，1毫克维生素C，441毫克钾。特点是ω-3脂肪酸丰富，补脑，护眼。"
+  },
+  {
+    "id": "almond",
+    "name": "杏仁（甜）",
+    "category": "坚果",
+    "nutrition_per_100g": {
+      "kcal": 575,
+      "carbohydrate_g": 21.9,
+      "protein_g": 21.2,
+      "fat_g": 50.4,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 705
+    },
+    "features": ["维生素E含量极高", "润肺止咳"],
+    "text_for_embedding": "杏仁（甜）是一种坚果。每100克含575千卡热量，21.9克碳水化合物，21.2克蛋白质，50.4克脂肪，0毫克维生素C，705毫克钾。特点是维生素E含量极高，润肺止咳。"
+  },
+  {
+    "id": "cashew",
+    "name": "腰果",
+    "category": "坚果",
+    "nutrition_per_100g": {
+      "kcal": 552,
+      "carbohydrate_g": 35.4,
+      "protein_g": 18.2,
+      "fat_g": 45.1,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 639
+    },
+    "features": ["含镁丰富", "保护神经", "口感酥脆"],
+    "text_for_embedding": "腰果是一种坚果。每100克含552千卡热量，35.4克碳水化合物，18.2克蛋白质，45.1克脂肪，0毫克维生素C，639毫克钾。特点是含镁丰富，保护神经，口感酥脆。"
+  },
+  {
+    "id": "pistachio",
+    "name": "开心果",
+    "category": "坚果",
+    "nutrition_per_100g": {
+      "kcal": 607,
+      "carbohydrate_g": 15.9,
+      "protein_g": 20.1,
+      "fat_g": 52.3,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 1024
+    },
+    "features": ["富含叶黄素", "保护视力", "热量较高"],
+    "text_for_embedding": "开心果是一种坚果。每100克含607千卡热量，15.9克碳水化合物，20.1克蛋白质，52.3克脂肪，0毫克维生素C，1024毫克钾。特点是富含叶黄素，保护视力，热量较高。"
+  },
+  {
+    "id": "almond_badam",
+    "name": "巴旦木",
+    "category": "坚果",
+    "nutrition_per_100g": {
+      "kcal": 578,
+      "carbohydrate_g": 20.6,
+      "protein_g": 21.3,
+      "fat_g": 51.6,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 751
+    },
+    "features": ["膳食纤维丰富", "促进肠道蠕动"],
+    "text_for_embedding": "巴旦木是一种坚果。每100克含578千卡热量，20.6克碳水化合物，21.3克蛋白质，51.6克脂肪，0毫克维生素C，751毫克钾。特点是膳食纤维丰富，促进肠道蠕动。"
+  },
+  {
+    "id": "pine_nut",
+    "name": "松子（熟）",
+    "category": "坚果",
+    "nutrition_per_100g": {
+      "kcal": 640,
+      "carbohydrate_g": 13.1,
+      "protein_g": 13.4,
+      "fat_g": 63.5,
+      "vitamin_c_mg": 0,
+      "potassium_mg": 587
+    },
+    "features": ["油脂优质", "富含磷", "补脑益智"],
+    "text_for_embedding": "松子（熟）是一种坚果。每100克含640千卡热量，13.1克碳水化合物，13.4克蛋白质，63.5克脂肪，0毫克维生素C，587毫克钾。特点是油脂优质，富含磷，补脑益智。"
+  }
+]
