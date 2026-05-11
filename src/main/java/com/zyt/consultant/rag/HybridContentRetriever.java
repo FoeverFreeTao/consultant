@@ -13,10 +13,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -25,7 +24,6 @@ import java.util.regex.Pattern;
 
 public class HybridContentRetriever implements ContentRetriever {
 
-    private static final double MIN_KEYWORD_SCORE = 0.08;
     private static final String DEFAULT_SOURCE = "knowledge-base";
     private static final Pattern TEXT_FOR_EMBEDDING_PATTERN = Pattern.compile("\"text_for_embedding\"\\s*:\\s*\"([^\"]+)\"");
     private static final List<String> SOURCE_KEYS = List.of(
@@ -41,22 +39,28 @@ public class HybridContentRetriever implements ContentRetriever {
     );
 
     private final ContentRetriever vectorRetriever;
-    private final List<TextSegment> keywordSegments;
+    private final KeywordContentSearcher keywordContentSearcher;
+    private final CrossEncoderReranker crossEncoderReranker;
     private final int keywordMaxResults;
     private final int finalMaxResults;
+    private final int rerankCandidateLimit;
     private final double vectorWeight;
     private final double keywordWeight;
 
     public HybridContentRetriever(ContentRetriever vectorRetriever,
-                                  List<TextSegment> keywordSegments,
+                                  KeywordContentSearcher keywordContentSearcher,
+                                  CrossEncoderReranker crossEncoderReranker,
                                   int keywordMaxResults,
                                   int finalMaxResults,
+                                  int rerankCandidateLimit,
                                   double vectorWeight,
                                   double keywordWeight) {
         this.vectorRetriever = Objects.requireNonNull(vectorRetriever, "vectorRetriever cannot be null");
-        this.keywordSegments = keywordSegments == null ? Collections.emptyList() : keywordSegments;
+        this.keywordContentSearcher = keywordContentSearcher;
+        this.crossEncoderReranker = crossEncoderReranker;
         this.keywordMaxResults = keywordMaxResults;
         this.finalMaxResults = finalMaxResults;
+        this.rerankCandidateLimit = rerankCandidateLimit;
         this.vectorWeight = vectorWeight;
         this.keywordWeight = keywordWeight;
     }
@@ -65,7 +69,7 @@ public class HybridContentRetriever implements ContentRetriever {
     public List<Content> retrieve(Query query) {
         ReferenceSourceContext.clear();
         List<Content> vectorResults = safeRetrieveVector(query);
-        List<KeywordHit> keywordHits = keywordRetrieve(query.text());
+        List<RetrievedTextSegment> keywordHits = keywordRetrieve(query.text());
 
         if (vectorResults.isEmpty() && keywordHits.isEmpty()) {
             return Collections.emptyList();
@@ -88,20 +92,20 @@ public class HybridContentRetriever implements ContentRetriever {
             hit.segmentMetadata = mergeMetadata(hit.segmentMetadata, segment.metadata());
         }
 
-        for (KeywordHit keywordHit : keywordHits) {
-            String cleanText = extractReadableText(keywordHit.text);
+        for (RetrievedTextSegment keywordHit : keywordHits) {
+            String cleanText = extractReadableText(keywordHit.text());
             if (cleanText.isBlank()) {
                 continue;
             }
             String key = normalizeKey(cleanText);
             MergedHit hit = merged.computeIfAbsent(
                     key,
-                    ignored -> new MergedHit(cleanText, keywordHit.source, keywordHit.metadata.copy())
+                    ignored -> new MergedHit(cleanText, keywordHit.source(), keywordHit.metadata().copy())
             );
-            hit.keywordScore = Math.max(hit.keywordScore, keywordHit.score);
-            hit.segmentMetadata = mergeMetadata(hit.segmentMetadata, keywordHit.metadata);
+            hit.keywordScore = Math.max(hit.keywordScore, keywordHit.score());
+            hit.segmentMetadata = mergeMetadata(hit.segmentMetadata, keywordHit.metadata());
             if (hit.source == null || hit.source.isBlank()) {
-                hit.source = keywordHit.source;
+                hit.source = keywordHit.source();
             }
         }
 
@@ -119,8 +123,9 @@ public class HybridContentRetriever implements ContentRetriever {
         reranked.sort(Comparator.comparingDouble((MergedHit h) -> h.finalScore).reversed());
 
         int limit = Math.max(1, finalMaxResults);
+        List<MergedHit> finalHits = crossEncoderRerank(query.text(), reranked, limit);
         List<Content> results = new ArrayList<>();
-        for (MergedHit hit : reranked.subList(0, Math.min(limit, reranked.size()))) {
+        for (MergedHit hit : finalHits.subList(0, Math.min(limit, finalHits.size()))) {
             String cleanedSource = nonBlankSource(hit.source);
             ReferenceSourceContext.addSource(cleanedSource);
             Metadata metadata = mergeMetadata(hit.segmentMetadata, Metadata.from("source", cleanedSource));
@@ -145,56 +150,52 @@ public class HybridContentRetriever implements ContentRetriever {
         }
     }
 
-    private List<KeywordHit> keywordRetrieve(String queryText) {
-        String normalizedQuery = normalizeForKeyword(queryText);
-        if (normalizedQuery.isBlank() || keywordSegments.isEmpty()) {
+    private List<RetrievedTextSegment> keywordRetrieve(String queryText) {
+        if (keywordContentSearcher == null || queryText == null || queryText.isBlank()) {
             return Collections.emptyList();
         }
-
-        Set<String> queryBigrams = toBigrams(normalizedQuery);
-        List<KeywordHit> hits = new ArrayList<>();
-
-        for (TextSegment segment : keywordSegments) {
-            String text = segment.text();
-            String normalizedText = normalizeForKeyword(text);
-            if (normalizedText.isBlank()) {
-                continue;
-            }
-
-            double score = keywordScore(normalizedQuery, normalizedText, queryBigrams);
-            if (score < MIN_KEYWORD_SCORE) {
-                continue;
-            }
-
-            hits.add(new KeywordHit(text, extractSource(segment.metadata()), segment.metadata(), score));
+        try {
+            List<RetrievedTextSegment> hits = keywordContentSearcher.search(queryText, Math.max(1, keywordMaxResults));
+            return hits == null ? Collections.emptyList() : hits;
+        } catch (Exception ex) {
+            return Collections.emptyList();
         }
-
-        hits.sort(Comparator.comparingDouble((KeywordHit h) -> h.score).reversed());
-        int limit = Math.max(1, keywordMaxResults);
-        return hits.subList(0, Math.min(limit, hits.size()));
     }
 
-    private double keywordScore(String normalizedQuery, String normalizedText, Set<String> queryBigrams) {
-        double containsBoost = normalizedText.contains(normalizedQuery) ? 1.0 : 0.0;
-
-        if (queryBigrams.isEmpty()) {
-            return containsBoost;
+    private List<MergedHit> crossEncoderRerank(String queryText, List<MergedHit> candidates, int limit) {
+        if (crossEncoderReranker == null || candidates == null || candidates.isEmpty()) {
+            return candidates == null ? Collections.emptyList() : candidates;
+        }
+        int candidateLimit = Math.min(candidates.size(), Math.max(limit, rerankCandidateLimit));
+        List<MergedHit> rerankCandidates = candidates.subList(0, candidateLimit);
+        List<String> documents = rerankCandidates.stream()
+                .map(hit -> hit.text)
+                .toList();
+        List<RerankScore> scores = crossEncoderReranker.rerank(queryText, documents, limit);
+        if (scores == null || scores.isEmpty()) {
+            return candidates;
         }
 
-        Set<String> textBigrams = toBigrams(normalizedText);
-        if (textBigrams.isEmpty()) {
-            return containsBoost;
+        List<MergedHit> finalHits = new ArrayList<>();
+        Set<MergedHit> selected = new HashSet<>();
+        for (RerankScore score : scores) {
+            if (score.index() < 0 || score.index() >= rerankCandidates.size()) {
+                continue;
+            }
+            MergedHit hit = rerankCandidates.get(score.index());
+            hit.finalScore = score.score();
+            finalHits.add(hit);
+            selected.add(hit);
         }
-
-        int overlap = 0;
-        for (String bigram : queryBigrams) {
-            if (textBigrams.contains(bigram)) {
-                overlap++;
+        for (MergedHit candidate : candidates) {
+            if (finalHits.size() >= limit) {
+                break;
+            }
+            if (selected.add(candidate)) {
+                finalHits.add(candidate);
             }
         }
-
-        double recall = overlap / (double) queryBigrams.size();
-        return Math.min(1.0, (0.85 * recall) + (0.15 * containsBoost));
+        return finalHits;
     }
 
     private double extractContentScore(Content content) {
@@ -276,26 +277,6 @@ public class HybridContentRetriever implements ContentRetriever {
         return s;
     }
 
-    private String normalizeForKeyword(String text) {
-        if (text == null) {
-            return "";
-        }
-        return text.toLowerCase(Locale.ROOT)
-                .replaceAll("[^\\p{IsHan}\\p{L}\\p{Nd}]", "")
-                .trim();
-    }
-
-    private Set<String> toBigrams(String text) {
-        if (text == null || text.length() < 2) {
-            return Collections.emptySet();
-        }
-        Set<String> grams = new LinkedHashSet<>();
-        for (int i = 0; i < text.length() - 1; i++) {
-            grams.add(text.substring(i, i + 2));
-        }
-        return grams;
-    }
-
     private String normalizeKey(String text) {
         if (text == null) {
             return "";
@@ -356,20 +337,6 @@ public class HybridContentRetriever implements ContentRetriever {
                 || line.matches("^\"[^\"]+\"\\s*:\\s*\\{?$")
                 || line.matches("^\"[^\"]+\"\\s*:\\s*.+,$")
                 || line.matches("^[\\[\\]{}\",]+$");
-    }
-
-    private static final class KeywordHit {
-        private final String text;
-        private final String source;
-        private final Metadata metadata;
-        private final double score;
-
-        private KeywordHit(String text, String source, Metadata metadata, double score) {
-            this.text = text;
-            this.source = source;
-            this.metadata = metadata == null ? new Metadata() : metadata.copy();
-            this.score = score;
-        }
     }
 
     private static final class MergedHit {

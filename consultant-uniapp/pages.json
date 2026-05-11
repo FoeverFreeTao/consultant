@@ -1,0 +1,54 @@
+{
+  "pages": [
+    {
+      "path": "pages/chat/index",
+      "style": {
+        "navigationBarTitleText": "智能咨询"
+      }
+    },
+    {
+      "path": "pages/session/index",
+      "style": {
+        "navigationBarTitleText": "会话列表"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#6b7280",
+    "selectedColor": "#0f766e",
+    "backgroundColor": "#f8fafc",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/chat/index",
+        "text": "咨询"
+      },
+      {
+        "pagePath": "pages/session/index",
+        "text": "会话"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "知心饮食与健康助手",
+    "navigationBarBackgroundColor": "#f8fafc",
+    "backgroundColor": "#f5f7fb"
+  }
+}

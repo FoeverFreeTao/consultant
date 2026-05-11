@@ -116,6 +116,18 @@ public class ChatSessionService {
         touchSession(parsed.userId(), parsed.sessionId(), titleHint);
     }
 
+    public void appendExchangeByMemoryId(String memoryId, String userContent, String assistantContent) {
+        ParsedMemoryKey parsed = parseMemoryKey(memoryId);
+        if (parsed == null || !StringUtils.hasText(userContent) || !StringUtils.hasText(assistantContent)) {
+            return;
+        }
+        List<ChatMessage> messages = new ArrayList<>(chatMemoryStore.getMessages(memoryId));
+        messages.add(UserMessage.from(userContent.trim()));
+        messages.add(AiMessage.from(assistantContent.trim()));
+        chatMemoryStore.updateMessages(memoryId, messages);
+        touchSession(parsed.userId(), parsed.sessionId(), userContent);
+    }
+
     public boolean deleteSession(Long userId, String sessionId) {
         Long removedMeta = redisTemplate.opsForHash().delete(buildSessionMetaKey(userId), sessionId);
         Long removedOrder = redisTemplate.opsForZSet().remove(buildSessionOrderKey(userId), sessionId);

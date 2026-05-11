@@ -1,0 +1,25 @@
+{
+  "name": "知心饮食与健康助手",
+  "appid": "__UNI__CONSULTANT__",
+  "description": "基于 Spring Boot 的 AI 饮食与健康助手 uni-app 客户端",
+  "versionName": "dev",
+  "versionCode": "100",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true
+  },
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "enhance": true,
+      "postcss": true,
+      "minified": true
+    },
+    "usingComponents": true
+  },
+  "h5": {
+    "title": "知心饮食与健康助手"
+  }
+}

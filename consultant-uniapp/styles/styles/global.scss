@@ -1,0 +1,123 @@
+$page-bg: #f5f7fb;
+$card-bg: rgba(255, 255, 255, 0.96);
+$primary: #0f766e;
+$primary-soft: #dff7f3;
+$text-main: #0f172a;
+$text-sub: #64748b;
+$border: #d8e2ef;
+
+page {
+  background: radial-gradient(circle at top, #eefbf7 0%, $page-bg 45%, #eef2ff 100%);
+  color: $text-main;
+  font-size: 28rpx;
+}
+
+view,
+text,
+button,
+input,
+textarea,
+scroll-view {
+  box-sizing: border-box;
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: 24rpx;
+}
+
+.hero-card,
+.section-card {
+  background: $card-bg;
+  border: 2rpx solid rgba(255, 255, 255, 0.88);
+  border-radius: 32rpx;
+  box-shadow: 0 24rpx 80rpx rgba(31, 41, 55, 0.08);
+}
+
+.section-card {
+  padding: 28rpx;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $text-main;
+}
+
+.section-subtitle {
+  margin-top: 10rpx;
+  color: $text-sub;
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88rpx;
+  padding: 0 30rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #14b8a6, #0f766e);
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.ghost-btn {
+  min-height: 80rpx;
+  padding: 0 28rpx;
+  border-radius: 999rpx;
+  background: #ffffff;
+  border: 2rpx solid $border;
+  color: $text-main;
+  font-size: 26rpx;
+}
+
+.status-text {
+  color: $text-sub;
+  font-size: 24rpx;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.field-label {
+  font-size: 26rpx;
+  color: $text-sub;
+}
+
+.field-input,
+.field-textarea {
+  width: 100%;
+  padding: 22rpx 24rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  border: 2rpx solid $border;
+  font-size: 28rpx;
+  color: $text-main;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.tag-chip {
+  padding: 14rpx 22rpx;
+  border-radius: 999rpx;
+  background: #ffffff;
+  border: 2rpx solid $border;
+  color: $text-sub;
+  font-size: 24rpx;
+}
+
+.tag-chip.active {
+  background: $primary-soft;
+  border-color: #8be2d4;
+  color: $primary;
+}

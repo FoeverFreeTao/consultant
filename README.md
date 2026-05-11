@@ -1,175 +1,221 @@
 # 知心饮食与健康助手
 
-一个基于 Spring Boot、LangChain4j、Vue 3、Redis 和 pgvector 的 AI 饮食与健康助手项目。
+基于 Spring Boot、LangChain4j、Vue 3、Redis、PostgreSQL pgvector、Elasticsearch 和可选 Neo4j GraphRAG 构建的 AI 饮食与健康咨询系统。项目围绕食品知识库、用户健康档案、日常状态和多会话聊天记忆，为用户提供饮食咨询、营养分析、技能偏好增强和知识库参考来源追踪。
 
-当前这版项目已经落地的核心能力包括：
-- 用户注册、登录、个人资料维护、日常状态维护
-- 多会话聊天，按用户维度把会话目录和聊天记忆存到 Redis
-- 技能偏好选择，并从 `Markdown` 技能文件动态加载给 LLM 使用
-- 基于 pgvector + 关键词召回的检索增强问答
-- 服务端统一追加知识库“参考来源”
-- 输入 Guardrail，拦截敏感词和提示注入类输入
+## 核心能力
 
-## 功能概览
-
-### 智能咨询
-- 对话入口：`GET /chat`
-- 支持基于 `memoryId` 的上下文记忆
-- 支持技能偏好增强
-- 支持知识库检索增强
-- 如果命中知识库，服务端会在回答末尾统一追加“参考来源”
-
-### 用户信息与日常状态
-- 注册、登录
-- 查询与修改个人资料
-- 查询与修改日常状态：饮水、睡眠、活动时长
-
-### 会话管理
-- 每个会话都有独立 `sessionId`
-- 会话目录存 Redis
-- 会话消息存 Redis
-- 支持新增、删除、切换会话
-- 页面刷新后可恢复会话列表和历史记录
-
-### 技能偏好
-- 技能定义来自 `src/main/resources/skills/*.md`
-- `name` / `description` 用于前端展示
-- Markdown 正文用于生成 LLM 技能提示
-- 当前内置技能：
-  - 减脂教练
-  - 增肌教练
-  - 低盐饮食
-  - 控糖友好
-  - 快手餐食
-
-### 检索增强问答
-- 使用 pgvector 做向量召回
-- 使用关键词检索做补充召回
-- 通过混合检索合并结果
-- 检索内容注入模型前会做清洗，避免原始 JSON、字段名、注入提示直接暴露给用户
-
-### 输入安全拦截
-- 基于 LangChain4j Input Guardrail
-- 支持敏感词过滤
-- 支持提示注入 / 越狱表达检测
-- 当前只保留输入侧 Guardrail，输出侧仍走服务端清洗和参考来源追加逻辑
+- 用户注册、登录、个人资料维护和日常健康状态维护
+- 多会话聊天，按用户和会话维度隔离上下文记忆
+- Redis 持久化聊天记忆、会话元信息和会话排序
+- 基于 pgvector、Elasticsearch、qwen3-rerank 和可选 GraphRAG 的混合 RAG 检索
+- 食品知识库内容清洗、召回、精排和参考来源统一追加
+- 技能偏好系统，支持从 Markdown 技能文件动态生成 LLM 行为提示
+- 文本输入 Guardrail，拦截敏感词、提示注入和越狱类输入
+- 餐食图片识别入口，支持图片餐食分析兜底流程
+- Micrometer + Prometheus 监控指标
 
 ## 技术栈
 
-### 后端
+后端：
+
 - Java 17
 - Spring Boot 3.5
 - LangChain4j
 - MyBatis Plus
 - MySQL
-- Redis
+- Redis / Redisson
 - PostgreSQL + pgvector
+- Elasticsearch
+- Neo4j（可选）
+- DashScope 兼容 OpenAI 接口
+- qwen3-rerank
 - Micrometer + Prometheus
 
-### 前端
+前端：
+
 - Vue 3
 - Vite
-- 原生 `fetch`
+- 原生 fetch
 
 ## 项目结构
 
 ```text
 consultant/
 ├─ src/main/java/com/zyt/consultant
-│  ├─ aiservice/          # LLM 服务接口
-│  ├─ config/             # Spring、Redis、pgvector、LangChain4j 配置
+│  ├─ aiservice/          # LangChain4j AI Service 接口
+│  ├─ config/             # Spring、pgvector、Redis、模型与 RAG 配置
 │  ├─ controller/         # HTTP 接口
-│  ├─ guardrail/          # 输入 Guardrail 实现
+│  ├─ GraphRAG/           # Neo4j 知识图谱同步与关系召回
+│  ├─ guardrail/          # 输入安全拦截
 │  ├─ mapper/             # MyBatis Mapper
-│  ├─ metrics/            # 业务指标埋点
-│  ├─ rag/                # 混合检索与来源上下文
+│  ├─ metrics/            # 业务指标
+│  ├─ rag/                # 混合检索、ES 召回、rerank 和参考来源上下文
 │  ├─ repository/         # Redis 聊天记忆存储
-│  ├─ service/            # 用户、会话、技能等业务服务
-│  ├─ tools/              # LLM 工具调用实现
-│  └─ Visualizer/         # 可视化相关工具
+│  ├─ service/            # 用户、会话、技能、视觉分析等业务服务
+│  ├─ tools/              # LLM 工具调用
+│  └─ Visualizer/         # 向量可视化工具
 ├─ src/main/resources
-│  ├─ content/            # 知识库原始内容
+│  ├─ content/            # 食品知识库原始内容
 │  ├─ skills/             # 技能 Markdown 定义
-│  ├─ sql/                # 初始化脚本
+│  ├─ sql/                # MySQL 初始化脚本
 │  ├─ System.txt          # 系统提示词
 │  └─ application.yml     # 主配置文件
 ├─ diet_helper-frontend/  # Vue 前端工程
 └─ pom.xml
 ```
 
-## 数据存储说明
+## 混合 RAG 架构
+
+项目采用 pgvector 语义召回、Elasticsearch 关键词召回、qwen3-rerank 精排与可选 GraphRAG 补充的混合 RAG 架构，从食品知识库中获取可靠背景材料，并在回答中统一追加参考来源。
+
+检索流程：
+
+```text
+用户问题
+  -> pgvector 向量召回
+  -> Elasticsearch 关键词候选召回
+  -> 候选合并、去重、粗排
+  -> qwen3-rerank cross-encoder 精排
+  -> 取 topN 片段注入 LLM
+  -> 可选并行 GraphRAG 关系补充
+  -> 服务端统一追加参考来源
+```
+
+关键配置：
+
+```yaml
+app:
+  rag:
+    search:
+      enabled: true
+      base-url: http://127.0.0.1:9200
+      index-name: consultant_knowledge
+      auto-index: true
+    rerank:
+      enabled: true
+      base-url: https://dashscope.aliyuncs.com
+      api-key: ${API_KEY:}
+      model-name: qwen3-rerank
+      candidate-limit: 32
+      top-n: 4
+      max-document-chars: 3500
+    parallel:
+      graph-timeout-ms: 1200
+```
+
+说明：
+
+- pgvector 保存食品知识库向量，负责语义召回。
+- Elasticsearch 保存切分后的知识库文本片段，负责关键词候选召回，避免请求时全量遍历。
+- `qwen3-rerank` 对候选片段做 cross-encoder 精排，默认最终取 4 条上下文。
+- GraphRAG 可从 Neo4j 中补充食品、营养、特征和分类之间的结构化关系。
+- 检索片段注入模型前会清洗，避免原始 JSON、字段名和内部提示暴露给用户。
+- 回答末尾的“参考来源”由服务端根据命中的 metadata 统一生成。
+
+## Redis 会话记忆
+
+Redis 中保存三类聊天数据：
+
+| 用途 | Redis 类型 | Key |
+| --- | --- | --- |
+| 聊天记忆 | String | `chat:memory:user:{userId}:session:{sessionId}` |
+| 会话元信息 | Hash | `chat:sessions:user:{userId}:meta` |
+| 会话排序 | ZSet | `chat:sessions:user:{userId}:order` |
+
+`memory` 保存 LangChain4j `ChatMessage` 列表序列化后的 JSON，用于恢复 LLM 上下文。
+
+`meta` 保存会话卡片信息，Hash field 是 `sessionId`，value 是包含 `title`、`createdAt`、`updatedAt` 的 JSON。
+
+`order` 保存会话排序，member 是 `sessionId`，score 是 `updatedAt` 时间戳。
+
+滑动窗口策略：
+
+- LangChain4j `MessageWindowChatMemory` 最多保留 20 条消息。
+- 项目额外配置字符窗口，默认 `context-window-max-chars: 12000`。
+- 最近 `context-window-recent-reserve: 4` 条非 system 消息强制保留。
+- 超出字符预算时，保留开头 system 消息和最新消息，跳过更旧且导致超预算的消息。
+- Redis TTL 默认 `chat-memory-ttl-days: 1`。
+
+## 数据存储
 
 ### MySQL
-用于保存业务数据，例如：
-- 用户基础信息
-- 日常状态等业务表
+
+保存用户、食品、日常状态等业务数据。
 
 初始化脚本：
-- `src/main/resources/sql/diet.sql`
 
-### Redis
-用于保存聊天相关数据。
-
-1. 会话目录
-- `chat:sessions:user:{userId}:meta`
-- `chat:sessions:user:{userId}:order`
-
-2. 会话消息
-- `chat:memory:user:{userId}:session:{sessionId}`
+```text
+src/main/resources/sql/diet.sql
+```
 
 ### PostgreSQL + pgvector
-用于保存知识库向量数据，支撑检索增强问答。
 
-## 当前接口
+保存知识库 embedding，默认表：
 
-### 对话接口
-- `GET /chat`
-  - 参数：`memoryId`、`message`、`skillIds`（可选）
+```text
+consultant_embedding
+```
 
-### 用户接口
-- `POST /user/register`
-- `POST /user/login`
-- `GET /user/profile`
-- `POST /user/profile/update`
-- `GET /user/daily`
-- `POST /user/daily/update`
+配置项：
 
-### 会话接口
-- `GET /chat/sessions`
-- `GET /chat/sessions/messages`
-- `POST /chat/sessions/create`
-- `POST /chat/sessions/delete`
+```yaml
+app:
+  vector-store:
+    pgvector:
+      host: 127.0.0.1
+      port: 5432
+      database: vector_db
+      table: consultant_embedding
+      dimension: 1024
+      auto-ingest: true
+```
 
-### 技能接口
-- `GET /skills/list`
-- `GET /skills/user`
-- `POST /skills/user/apply`
+当 pgvector 表为空且 `auto-ingest` 开启时，应用会读取 `src/main/resources/content` 并自动切分、向量化、入库。
 
-## 前端页面结构
+### Elasticsearch
 
-当前页面是三栏布局：
-- 左侧：会话列表，支持新增和删除会话
-- 中间：智能咨询区，显示快捷问题、历史消息和输入框
-- 右侧：个人信息与技能偏好
+保存知识库文本片段，默认索引：
 
-前端视图已经拆成组件：
-- `HeroSection.vue`
-- `AuthPanel.vue`
-- `SessionSidebar.vue`
-- `ChatPanel.vue`
-- `ProfilePanel.vue`
-- `ProfileModal.vue`
-- `DailyModal.vue`
+```text
+consultant_knowledge
+```
 
-主状态和接口调用目前仍集中在：
-- `diet_helper-frontend/src/App.vue`
+应用启动时如果 `app.rag.search.auto-index: true`，会将 `src/main/resources/content` 切分后的片段写入 ES。
 
-## 技能 Markdown 规范
+查看索引：
+
+```bash
+curl http://127.0.0.1:9200/_cat/indices?v
+curl http://127.0.0.1:9200/consultant_knowledge/_count
+```
+
+### Neo4j（可选）
+
+Neo4j 用于构建食品知识图谱和 GraphRAG 补充召回。开启后可从 pgvector 既有数据同步 `KnowledgeChunk`，并从食品 JSON 中解析 `Food`、`Category`、`Feature`、`Nutrient` 等节点。
+
+手动同步：
+
+```bash
+curl -X POST http://127.0.0.1:8087/knowledge-graph/sync
+```
+
+查看关系：
+
+```cypher
+MATCH p=(f:Food)-[:HAS_NUTRIENT|HAS_FEATURE|BELONGS_TO]->()
+RETURN p
+LIMIT 50;
+```
+
+## 技能偏好
 
 技能文件位于：
-- `src/main/resources/skills/`
 
-每个技能一个 Markdown 文件，结构示例：
+```text
+src/main/resources/skills/
+```
+
+每个技能是一个 Markdown 文件，包含前置元数据和正文提示：
 
 ```md
 ---
@@ -179,88 +225,210 @@ description: 优先推荐低热量、高饱腹感、便于坚持的饮食方案�
 ---
 
 Prioritize a fat-loss coaching style.
-
-- Recommend lower-calorie and higher-satiety meal options first.
-- Keep advice practical and easy to follow.
 ```
 
-字段说明：
-- `id`：技能唯一标识
-- `name`：前端展示名称
-- `description`：前端展示说明
-- 正文：提供给 LLM 的技能提示内容
+前端展示 `name` 和 `description`，后端将正文注入到用户问题前，形成技能增强提示。
 
-## 输入 Guardrail 说明
+## 输入安全
 
-当前只保留输入侧 Guardrail，相关代码位于：
-- `src/main/java/com/zyt/consultant/guardrail/ChatInputGuardrailService.java`
-- `src/main/java/com/zyt/consultant/guardrail/SensitiveKeywordInputGuardrail.java`
-- `src/main/java/com/zyt/consultant/guardrail/PromptInjectionInputGuardrail.java`
-- `src/main/java/com/zyt/consultant/guardrail/ChatSafetyProperties.java`
+输入 Guardrail 位于：
+
+```text
+src/main/java/com/zyt/consultant/guardrail/
+```
 
 当前能力：
-- 拦截敏感词
-- 拦截典型 prompt injection / jailbreak 表达
-- Guardrail 自身执行异常时不阻断正常消息，避免误拦截
 
-配置位于：
-- `src/main/resources/application.yml`
+- 敏感词拦截
+- prompt injection / jailbreak 表达检测
+- Guardrail 异常时降级放行，避免安全模块故障阻断正常咨询
 
-## 检索与参考来源说明
+## 接口概览
 
-当前问答链路包含这些保护：
-- 检索内容在注入模型前会做清洗
-- 不再把原始 JSON、字段名、提示注入文本直接暴露给用户
-- “参考来源”由服务端根据检索 metadata 统一追加
-- 历史消息返回前也会做清洗，避免刷新后出现内部检索上下文
+### 聊天
 
-## 监控
+```text
+GET/POST /chat
+```
 
-项目已集成：
-- Spring Boot Actuator
-- Prometheus 指标
+参数：
 
-常见端点：
-- `/actuator/health`
-- `/actuator/metrics`
-- `/actuator/prometheus`
+- `memoryId`：聊天记忆 key，建议使用 `chat:memory:user:{userId}:session:{sessionId}`
+- `message`：用户问题
+- `skillIds`：可选，逗号分隔的技能 ID
+
+### 图片餐食分析
+
+```text
+POST /chat/image
+```
+
+`multipart/form-data` 参数：
+
+- `memoryId`
+- `message`：可选
+- `image`
+
+### 会话
+
+```text
+GET  /chat/sessions?userId={userId}
+GET  /chat/sessions/messages?userId={userId}&sessionId={sessionId}
+POST /chat/sessions/create
+POST /chat/sessions/delete
+```
+
+### 用户
+
+```text
+POST /user/register
+POST /user/login
+GET  /user/profile
+POST /user/profile/update
+GET  /user/daily
+POST /user/daily/update
+```
+
+### 技能
+
+```text
+GET  /skills/list
+GET  /skills/user
+POST /skills/user/apply
+```
+
+### 知识图谱
+
+```text
+POST /knowledge-graph/sync
+```
+
+## 前端说明
+
+前端位于：
+
+```text
+diet_helper-frontend/
+```
+
+当前是三栏布局：
+
+- 左侧：会话列表，支持新增、删除和切换
+- 中间：聊天区，支持快捷问题、历史消息和输入
+- 右侧：个人资料、日常状态和技能偏好
+
+主要组件：
+
+- `AuthPanel.vue`
+- `SessionSidebar.vue`
+- `ChatPanel.vue`
+- `ProfilePanel.vue`
+- `ProfileModal.vue`
+- `DailyModal.vue`
+
+主状态和接口调用集中在：
+
+```text
+diet_helper-frontend/src/App.vue
+```
 
 ## 快速启动
 
 ### 1. 环境准备
+
 - JDK 17+
 - Maven 3.9+
 - Node.js 18+
 - MySQL 8+
 - Redis 6+
 - PostgreSQL 15+，并安装 pgvector 扩展
+- Elasticsearch 8+（关键词召回需要）
+- Neo4j 5+（GraphRAG 可选）
 
-### 2. 初始化数据库
-导入脚本：
-- `src/main/resources/sql/diet.sql`
+### 2. 启动 Elasticsearch
 
-### 3. 配置 `application.yml`
+Docker 示例：
+
+```bash
+docker run -d --name consultant-es \
+  -p 9200:9200 \
+  -p 9300:9300 \
+  -e "discovery.type=single-node" \
+  -e "xpack.security.enabled=false" \
+  -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" \
+  docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+```
+
+验证：
+
+```bash
+curl http://127.0.0.1:9200
+```
+
+暂时不用 ES 时可关闭关键词召回：
+
+```yaml
+app:
+  rag:
+    search:
+      enabled: false
+```
+
+### 3. 初始化 MySQL
+
+导入：
+
+```text
+src/main/resources/sql/diet.sql
+```
+
+### 4. 配置后端
+
 重点确认：
+
+- `langchain4j.open-ai.*`
 - `spring.datasource.*`
 - `spring.data.redis.*`
 - `app.vector-store.pgvector.*`
-- `langchain4j.open-ai.*`
+- `app.rag.search.*`
+- `app.rag.rerank.*`
+- `app.knowledge-graph.neo4j.*`
 - `app.guardrails.input.*`
 
-说明：
-- 当前模型配置走 DashScope 兼容 OpenAI 接口
-- `api-key` 建议放到本地环境变量中
+模型 API key 建议放到环境变量：
 
-### 4. 启动后端
+```bash
+API_KEY=your_dashscope_api_key
+```
+
+### 5. 启动后端
+
 ```bash
 mvn spring-boot:run
 ```
 
-默认端口：`8087`
+默认端口：
 
-### 5. 启动前端
+```text
+8087
+```
+
+### 6. 启动前端
+
 ```bash
 cd diet_helper-frontend
 npm install
 npm run dev
+```
+
+## 监控
+
+项目集成 Spring Boot Actuator 和 Prometheus 指标。
+
+常用端点：
+
+```text
+/actuator/health
+/actuator/metrics
+/actuator/prometheus
 ```

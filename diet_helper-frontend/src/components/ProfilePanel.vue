@@ -45,7 +45,7 @@ const hasSkill = (selected, id) => selected.includes(id)
         <dd>{{ userProfile.heightCm }} cm / {{ userProfile.weightKg }} kg</dd>
       </div>
       <div class="profile-row">
-        <dt>目标</dt>
+        <dt>我的目标</dt>
         <dd>{{ userProfile.target }}</dd>
       </div>
       <div class="profile-row">
@@ -60,7 +60,7 @@ const hasSkill = (selected, id) => selected.includes(id)
 
     <div class="skills-area">
       <div class="section-header">
-        <h3>技能偏好</h3>
+        <h3>今日偏好</h3>
       </div>
       <p class="muted tip">勾选后点击“应用技能”，后续问答会按技能偏好进行。</p>
 

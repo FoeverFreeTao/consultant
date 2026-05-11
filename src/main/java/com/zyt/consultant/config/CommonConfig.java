@@ -1,6 +1,15 @@
 package com.zyt.consultant.config;
 
+import com.zyt.consultant.GraphRAG.GraphRelationRetriever;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zyt.consultant.rag.CrossEncoderReranker;
+import com.zyt.consultant.rag.DashScopeCrossEncoderReranker;
+import com.zyt.consultant.rag.ElasticsearchKeywordContentSearcher;
 import com.zyt.consultant.rag.HybridContentRetriever;
+import com.zyt.consultant.rag.KeywordContentSearcher;
+import com.zyt.consultant.rag.ParallelRagContentRetriever;
+import com.zyt.consultant.rag.RagRerankProperties;
+import com.zyt.consultant.rag.RagSearchProperties;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.loader.ClassPathDocumentLoader;
@@ -15,12 +24,17 @@ import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-import java.util.Collections;import java.util.List;
+import java.util.Collections;
+import java.util.List;
 
 @Configuration
+@EnableConfigurationProperties({RagSearchProperties.class, RagRerankProperties.class})
 public class CommonConfig {
 
     @Autowired
@@ -31,6 +45,12 @@ public class CommonConfig {
 
     @Autowired
     private EmbeddingStore<TextSegment> embeddingStore;
+
+    @Autowired
+    private ObjectProvider<GraphRelationRetriever> graphRelationRetrieverProvider;
+
+    @Value("${app.rag.parallel.graph-timeout-ms:1200}")
+    private long graphRagTimeoutMs;
 
     @Bean
     public ChatMemory chatMemory() {
@@ -69,21 +89,45 @@ public class CommonConfig {
 //        return redisEmbeddingStore;
 //    }
     @Bean
-    public ContentRetriever contentRetriever() {
+    public KeywordContentSearcher keywordContentSearcher(RagSearchProperties searchProperties,
+                                                         ObjectMapper objectMapper) {
+        return new ElasticsearchKeywordContentSearcher(searchProperties, loadKeywordSegments(), objectMapper);
+    }
+
+    @Bean
+    public CrossEncoderReranker crossEncoderReranker(RagRerankProperties rerankProperties) {
+        return new DashScopeCrossEncoderReranker(rerankProperties);
+    }
+
+    @Bean
+    public ContentRetriever contentRetriever(KeywordContentSearcher keywordContentSearcher,
+                                             CrossEncoderReranker crossEncoderReranker,
+                                             RagRerankProperties rerankProperties) {
         ContentRetriever vectorRetriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore)
                 .minScore(0.35)
-                .maxResults(8)
+                .maxResults(Math.max(8, rerankProperties.getCandidateLimit() / 2))
                 .embeddingModel(embeddingModel)
                 .build();
 
-        return new HybridContentRetriever(
+        ContentRetriever traditionalRetriever = new HybridContentRetriever(
                 vectorRetriever,
-                loadKeywordSegments(),
-                8,
-                4,
+                keywordContentSearcher,
+                crossEncoderReranker,
+                Math.max(8, rerankProperties.getCandidateLimit()),
+                rerankProperties.getTopN(),
+                rerankProperties.getCandidateLimit(),
                 0.7,
                 0.3
+        );
+        GraphRelationRetriever graphRelationRetriever = graphRelationRetrieverProvider.getIfAvailable();
+        if (graphRelationRetriever == null) {
+            return traditionalRetriever;
+        }
+        return new ParallelRagContentRetriever(
+                traditionalRetriever,
+                graphRelationRetriever,
+                graphRagTimeoutMs
         );
     }
 

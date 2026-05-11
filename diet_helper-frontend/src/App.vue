@@ -382,6 +382,7 @@ const logout = () => {
   activeUser.value = null
   localStorage.removeItem(storageKey)
   authMessage.value = '已退出登录'
+  authMode.value = 'login'
   profileModalVisible.value = false
   dailyModalVisible.value = false
   selectedSkillIds.value = []
@@ -793,9 +794,9 @@ const localDietAdvice = (question) => {
   return '可以先从规律三餐、控制总量、增加蛋白质和蔬菜比例开始，这样通常更容易执行。'
 }
 
-const submitQuestion = async () => {
+const submitQuestion = async (imageFile = null) => {
   const question = chatInput.value.trim()
-  if (!question || loading.value) {
+  if ((!question && !imageFile) || loading.value) {
     return
   }
 
@@ -813,18 +814,36 @@ const submitQuestion = async () => {
     return
   }
 
-  session.messages.push({ role: 'user', content: question })
+  const userContent = question || '上传了一张餐食照片，请识别食物类型、估算份量和营养价值。'
+  const imageUrl = imageFile ? URL.createObjectURL(imageFile) : ''
+  session.messages.push({
+    role: 'user',
+    content: userContent,
+    ...(imageUrl ? { imageUrl } : {})
+  })
   session.updatedAt = Date.now()
-  updateSessionTitle(session, question)
+  updateSessionTitle(session, userContent)
   chatInput.value = ''
   loading.value = true
 
   try {
-    const params = new URLSearchParams({
-      message: question,
-      memoryId: memoryId.value
-    })
-    const response = await fetch(`/chat?${params.toString()}`)
+    let response
+    if (imageFile) {
+      const formData = new FormData()
+      formData.append('memoryId', memoryId.value)
+      formData.append('message', userContent)
+      formData.append('image', imageFile)
+      response = await fetch('/chat/image', {
+        method: 'POST',
+        body: formData
+      })
+    } else {
+      const params = new URLSearchParams({
+        message: userContent,
+        memoryId: memoryId.value
+      })
+      response = await fetch(`/chat?${params.toString()}`)
+    }
     if (!response.ok) {
       throw new Error('request_failed')
     }
@@ -836,7 +855,9 @@ const submitQuestion = async () => {
   } catch (error) {
     session.messages.push({
       role: 'assistant',
-      content: `${localDietAdvice(question)} 当前服务暂时有点忙，你可以稍后再试。`
+      content: imageFile
+        ? '当前图片识别服务暂时有点忙。你可以先用文字告诉我图片里的食物和大致份量，我会继续帮你估算热量和营养。'
+        : `${localDietAdvice(userContent)} 当前服务暂时有点忙，你可以稍后再试。`
     })
   } finally {
     session.updatedAt = Date.now()
@@ -856,19 +877,7 @@ if (activeUser.value?.phone) {
 </script>
 
 <template>
-  <div class="page">
-    <HeroSection
-      :bmi="bmi"
-      :hydration-progress="hydrationProgress"
-      :sleep-hour="sleepHour"
-      :activity-minute="activityMinute"
-      :is-authenticated="isAuthenticated"
-      :nickname="userProfile.nickname"
-      @open-profile="openProfileModal"
-      @open-daily="openDailyModal"
-      @logout="logout"
-    />
-
+  <main :class="['page', { 'auth-page': !isAuthenticated }]">
     <AuthPanel
       v-if="!isAuthenticated"
       :auth-mode="authMode"
@@ -880,59 +889,73 @@ if (activeUser.value?.phone) {
       @submit-register="submitRegister"
     />
 
-    <ProfileModal
-      :visible="profileModalVisible"
-      :saving="profileSaving"
-      :message="profileMessage"
-      :form="profileForm"
-      @submit="submitProfileUpdate"
-      @close="closeProfileModal"
-    />
-
-    <DailyModal
-      :visible="dailyModalVisible"
-      :saving="dailySaving"
-      :message="dailyMessage"
-      :form="dailyForm"
-      @submit="submitDailyUpdate"
-      @close="closeDailyModal"
-    />
-
-    <section class="dashboard">
-      <SessionSidebar
-        :sessions="chatSessions"
-        :active-session-id="activeSessionId"
-        :has-active-session="Boolean(activeSession)"
-        @create-session="createSession"
-        @delete-session="deleteSession(activeSessionId)"
-        @switch-session="switchSession"
-      />
-
-      <ChatPanel
-        v-model="chatInput"
-        :active-session-title="activeSession?.title || ''"
-        :quick-prompts="quickPrompts"
-        :current-messages="currentMessages"
-        :loading="loading"
+    <template v-else>
+      <HeroSection
+        :bmi="bmi"
+        :hydration-progress="hydrationProgress"
+        :sleep-hour="sleepHour"
+        :activity-minute="activityMinute"
         :is-authenticated="isAuthenticated"
-        @ask-prompt="askPrompt"
-        @submit-question="submitQuestion"
+        :nickname="userProfile.nickname"
+        @open-profile="openProfileModal"
+        @open-daily="openDailyModal"
+        @logout="logout"
       />
 
-      <ProfilePanel
-        :is-authenticated="isAuthenticated"
-        :user-profile="userProfile"
-        :active-user-phone="activeUser?.phone || ''"
-        :skills-loading="skillsLoading"
-        :skill-catalog="skillCatalog"
-        :selected-skill-ids="selectedSkillIds"
-        :skills-saving="skillsSaving"
-        :skills-message="skillsMessage"
-        @toggle-skill="toggleSkillSelection"
-        @save-skills="saveSkills"
+      <ProfileModal
+        :visible="profileModalVisible"
+        :saving="profileSaving"
+        :message="profileMessage"
+        :form="profileForm"
+        @submit="submitProfileUpdate"
+        @close="closeProfileModal"
       />
-    </section>
-  </div>
+
+      <DailyModal
+        :visible="dailyModalVisible"
+        :saving="dailySaving"
+        :message="dailyMessage"
+        :form="dailyForm"
+        @submit="submitDailyUpdate"
+        @close="closeDailyModal"
+      />
+
+      <section class="dashboard">
+        <SessionSidebar
+          :sessions="chatSessions"
+          :active-session-id="activeSessionId"
+          :has-active-session="Boolean(activeSession)"
+          @create-session="createSession"
+          @delete-session="deleteSession(activeSessionId)"
+          @switch-session="switchSession"
+        />
+
+        <ChatPanel
+          v-model="chatInput"
+          :active-session-title="activeSession?.title || ''"
+          :quick-prompts="quickPrompts"
+          :current-messages="currentMessages"
+          :loading="loading"
+          :is-authenticated="isAuthenticated"
+          @ask-prompt="askPrompt"
+          @submit-question="submitQuestion"
+        />
+
+        <ProfilePanel
+          :is-authenticated="isAuthenticated"
+          :user-profile="userProfile"
+          :active-user-phone="activeUser?.phone || ''"
+          :skills-loading="skillsLoading"
+          :skill-catalog="skillCatalog"
+          :selected-skill-ids="selectedSkillIds"
+          :skills-saving="skillsSaving"
+          :skills-message="skillsMessage"
+          @toggle-skill="toggleSkillSelection"
+          @save-skills="saveSkills"
+        />
+      </section>
+    </template>
+  </main>
 </template>
 
 <style scoped>
@@ -942,6 +965,11 @@ if (activeUser.value?.phone) {
   background: linear-gradient(180deg, #f4f8ff 0%, #f7fbf7 100%);
   color: #1f2937;
   overflow-x: hidden;
+}
+
+.page.auth-page {
+  padding: 0;
+  background: transparent;
 }
 
 .page * {

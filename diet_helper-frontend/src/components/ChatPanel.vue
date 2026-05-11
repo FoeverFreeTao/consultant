@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from 'vue'
+
 const props = defineProps({
   modelValue: { type: String, default: '' },
   activeSessionTitle: { type: String, default: '' },
@@ -16,6 +18,10 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'ask-prompt', 'submit-question'])
 
+const fileInput = ref(null)
+const selectedImage = ref(null)
+const previewUrl = ref('')
+
 const updateInput = (event) => {
   emit('update:modelValue', event.target.value)
 }
@@ -25,7 +31,49 @@ const onEnter = (event) => {
     return
   }
   event.preventDefault()
-  emit('submit-question')
+  submitWithImage()
+}
+
+const openImagePicker = () => {
+  if (props.loading) {
+    return
+  }
+  fileInput.value?.click()
+}
+
+const onImageChange = (event) => {
+  const file = event.target.files?.[0]
+  if (!file) {
+    return
+  }
+  if (!file.type.startsWith('image/')) {
+    event.target.value = ''
+    return
+  }
+  selectedImage.value = file
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+  previewUrl.value = URL.createObjectURL(file)
+}
+
+const clearImage = () => {
+  selectedImage.value = null
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+  previewUrl.value = ''
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+const submitWithImage = () => {
+  const image = selectedImage.value
+  emit('submit-question', image)
+  if (image) {
+    clearImage()
+  }
 }
 </script>
 
@@ -55,6 +103,7 @@ const onEnter = (event) => {
         :class="['message-card', message.role === 'user' ? 'user' : 'assistant']"
       >
         <h3 v-if="message.role === 'assistant' && index === 0 && activeSessionTitle">{{ activeSessionTitle }}</h3>
+        <img v-if="message.imageUrl" :src="message.imageUrl" alt="上传的餐食照片" class="message-image" />
         <p>{{ message.content }}</p>
       </article>
 
@@ -63,19 +112,40 @@ const onEnter = (event) => {
       </div>
     </div>
 
-    <div class="input-row">
-      <textarea
-        :value="modelValue"
-        class="chat-input"
-        rows="2"
-        :placeholder="isAuthenticated ? '输入你的饮食问题' : '请先登录后再开始提问'"
-        :disabled="loading"
-        @input="updateInput"
-        @keydown.enter="onEnter"
-      />
-      <button type="button" class="send-btn" :disabled="loading" @click="$emit('submit-question')">
-        发送
-      </button>
+    <div class="composer">
+      <div v-if="previewUrl" class="image-preview">
+        <img :src="previewUrl" alt="待识别的餐食照片" />
+        <div class="image-preview-meta">
+          <span>{{ selectedImage?.name }}</span>
+          <button type="button" class="clear-image-btn" :disabled="loading" @click="clearImage">移除</button>
+        </div>
+      </div>
+
+      <div class="input-row">
+        <input
+          ref="fileInput"
+          type="file"
+          class="file-input"
+          accept="image/*"
+          :disabled="loading"
+          @change="onImageChange"
+        />
+        <button type="button" class="image-btn" :disabled="loading" title="上传餐食照片" @click="openImagePicker">
+          图
+        </button>
+        <textarea
+          :value="modelValue"
+          class="chat-input"
+          rows="2"
+          :placeholder="isAuthenticated ? '输入你的饮食问题，也可以上传餐食照片' : '请先登录后再开始提问'"
+          :disabled="loading"
+          @input="updateInput"
+          @keydown.enter="onEnter"
+        />
+        <button type="button" class="send-btn" :disabled="loading" @click="submitWithImage">
+          发送
+        </button>
+      </div>
     </div>
   </section>
 </template>
@@ -159,6 +229,15 @@ const onEnter = (event) => {
   margin: 0;
 }
 
+.message-image {
+  display: block;
+  width: min(260px, 100%);
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+
 .message-card.assistant {
   background: #15b5b3;
   color: #fff;
@@ -175,11 +254,75 @@ const onEnter = (event) => {
   color: #0f766e;
 }
 
+.composer {
+  display: grid;
+  gap: 10px;
+}
+
+.image-preview {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #dbe7fb;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.image-preview img {
+  width: 88px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.image-preview-meta {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #334155;
+  font-size: 13px;
+}
+
+.image-preview-meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clear-image-btn {
+  flex: 0 0 auto;
+  border: 1px solid #dbe7fb;
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: #f8fbff;
+  color: #475569;
+  cursor: pointer;
+}
+
 .input-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 12px;
   align-items: end;
+}
+
+.file-input {
+  display: none;
+}
+
+.image-btn {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #dbe7fb;
+  border-radius: 16px;
+  background: #f8fbff;
+  color: #0f766e;
+  font-size: 20px;
+  cursor: pointer;
 }
 
 .chat-input {
@@ -203,6 +346,12 @@ const onEnter = (event) => {
 }
 
 .send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.image-btn:disabled,
+.clear-image-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

@@ -4,6 +4,8 @@ import com.zyt.consultant.entity.UserDailyStatus;
 import com.zyt.consultant.mapper.UserDailyStatusMapper;
 import com.zyt.consultant.rag.ReferenceSourceContext;
 import dev.langchain4j.agent.tool.Tool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -15,6 +17,7 @@ import java.util.regex.Pattern;
 @Component
 public class DailyStatusHealthTool {
 
+    private static final Logger log = LoggerFactory.getLogger(DailyStatusHealthTool.class);
     private static final Pattern USER_ID_PATTERN = Pattern.compile("(?:^user-(\\d+)$)|(?:^chat:memory:user:(\\d+):session:[\\w-]+$)");
     private static final String DAILY_STATUS_SOURCE = "用户当日日常数据";
     private static final String USER_INPUT_SOURCE = "用户提供的健康数据";
@@ -28,7 +31,13 @@ public class DailyStatusHealthTool {
         if (userId == null || userId <= 0) {
             return "无法评估：memoryId无效或未包含用户ID。";
         }
-        UserDailyStatus status = userDailyStatusMapper.findByUserId(userId);
+        UserDailyStatus status;
+        try {
+            status = userDailyStatusMapper.findByUserId(userId);
+        } catch (Exception ex) {
+            log.warn("daily status fallback triggered, userId={}", userId, ex);
+            return "暂时无法读取你的今日日常数据，因此不能给出精确评估。可先参考通用目标：饮水 1500-2000ml，睡眠 7-9 小时，每天至少 30 分钟中等强度活动；如果你补充实际饮水、睡眠和运动数据，我可以先按这些数值给出通用建议。";
+        }
         if (status == null) {
             return "无法评估：未找到该用户今日日常数据。";
         }
@@ -42,8 +51,13 @@ public class DailyStatusHealthTool {
     }
     @Tool("根据饮水量(ml)、睡眠时长(小时)和运动时长(分钟)评估今日日常状态是否健康并给出建议")
     public String evaluateByValues(Integer hydrationMl, BigDecimal sleepHour, Integer activityMinute) {
-        ReferenceSourceContext.addSource(USER_INPUT_SOURCE);
-        return evaluate(hydrationMl, sleepHour, activityMinute);
+        try {
+            ReferenceSourceContext.addSource(USER_INPUT_SOURCE);
+            return evaluate(hydrationMl, sleepHour, activityMinute);
+        } catch (Exception ex) {
+            log.warn("daily status evaluate by values fallback triggered", ex);
+            return "暂时无法完成日常状态评估。可先参考通用目标：饮水 1500-2000ml，睡眠 7-9 小时，每天至少 30 分钟中等强度活动。";
+        }
     }
 
     private Long parseUserId(String memoryId) {
