@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed, ref, watch } from 'vue'
 import HeroSection from './components/HeroSection.vue'
 import AuthPanel from './components/AuthPanel.vue'
@@ -961,9 +961,12 @@ if (activeUser.value?.phone) {
 <style scoped>
 .page {
   min-height: 100vh;
-  padding: 20px 16px 28px;
-  background: linear-gradient(180deg, #f4f8ff 0%, #f7fbf7 100%);
-  color: #1f2937;
+  padding: var(--space-5) var(--space-4) var(--space-8);
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, oklch(94% 0.04 176 / 0.3), transparent),
+    radial-gradient(ellipse 60% 50% at 80% 90%, oklch(94% 0.04 46 / 0.2), transparent),
+    var(--surface-50);
+  color: var(--text-primary);
   overflow-x: hidden;
 }
 
@@ -972,16 +975,12 @@ if (activeUser.value?.phone) {
   background: transparent;
 }
 
-.page * {
-  box-sizing: border-box;
-}
-
 .dashboard {
   max-width: 1160px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(520px, 1fr) minmax(260px, 320px);
-  gap: 16px;
+  gap: var(--space-4);
   align-items: stretch;
 }
 
